@@ -8,7 +8,7 @@ public abstract class Type {
 
     public abstract boolean contains(TypeVar tv);
 
-    public abstract Substitution unify(Type t) throws TypeError;
+    public abstract Substitution unify(Type other) throws TypeError;
 
     public static final Type INT = new IntType();
     public static final Type BOOL = new BoolType();

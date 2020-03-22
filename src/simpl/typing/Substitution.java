@@ -30,8 +30,8 @@ public abstract class Substitution {
         private Substitution f, g;
 
         public Compose(Substitution f, Substitution g) {
-            this.f = f;
-            this.g = g;
+            this.f = f; // second
+            this.g = g; // this is substituted first
         }
 
         public Type apply(Type t) {

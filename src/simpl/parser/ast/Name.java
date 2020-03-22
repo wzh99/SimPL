@@ -20,7 +20,7 @@ public class Name extends Expr {
         return "" + x;
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         // TODO
         return null;
     }

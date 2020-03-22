@@ -10,7 +10,7 @@ public abstract class ArithExpr extends BinaryExpr {
         super(l, r);
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         // TODO
         return null;
     }

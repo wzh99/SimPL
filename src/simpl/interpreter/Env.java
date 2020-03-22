@@ -31,12 +31,11 @@ public class Env {
     }
 
     public Value get(Symbol y) {
-        // TODO
-        return null;
+        assert E != null;
+        return x == y ? v : E.get(y);
     }
 
     public Env clone() {
-        // TODO
-        return null;
+        return new Env(E, x, v);
     }
 }

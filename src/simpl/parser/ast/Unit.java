@@ -14,7 +14,7 @@ public class Unit extends Expr {
         return "()";
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         return TypeResult.of(Type.UNIT);
     }
 

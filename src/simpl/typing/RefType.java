@@ -9,23 +9,26 @@ public final class RefType extends Type {
     }
 
     @Override public boolean isEqualityType() {
-        // TODO
-        return false;
+        return true;
     }
 
-    @Override public Substitution unify(Type t) throws TypeError {
-        // TODO
-        return null;
+    @Override public Substitution unify(Type other) throws TypeError {
+        if (other instanceof TypeVar) {
+            other.unify(this);
+        }
+        else if (other instanceof RefType) {
+            t.unify(((RefType) other).t);
+        }
+        throw new TypeMismatchError();
     }
 
     @Override public boolean contains(TypeVar tv) {
-        // TODO
+
         return false;
     }
 
     @Override public Type replace(TypeVar a, Type t) {
-        // TODO
-        return null;
+        return new RefType(this.t.replace(a, t));
     }
 
     public String toString() {

@@ -21,7 +21,7 @@ public class IntegerLiteral extends Expr {
         return "" + n;
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         return TypeResult.of(Type.INT);
     }
 

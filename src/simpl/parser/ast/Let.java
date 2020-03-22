@@ -23,7 +23,7 @@ public class Let extends Expr {
         return "(let " + x + " = " + e1 + " in " + e2 + ")";
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         // TODO
         return null;
     }

@@ -9,11 +9,11 @@ final class UnitType extends Type {
         return false;
     }
 
-    @Override public Substitution unify(Type t) throws TypeError {
-        if (t instanceof TypeVar) {
-            return t.unify(this);
+    @Override public Substitution unify(Type other) throws TypeError {
+        if (other instanceof TypeVar) {
+            return other.unify(this);
         }
-        if (t instanceof UnitType) {
+        if (other instanceof UnitType) {
             return Substitution.IDENTITY;
         }
         throw new TypeMismatchError();

@@ -20,7 +20,7 @@ public class Loop extends Expr {
         return "(while " + e1 + " do " + e2 + ")";
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         // TODO
         return null;
     }

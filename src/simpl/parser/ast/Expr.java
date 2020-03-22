@@ -9,7 +9,7 @@ import simpl.typing.TypeResult;
 
 public abstract class Expr {
 
-    public abstract TypeResult typecheck(TypeEnv E) throws TypeError;
+    public abstract TypeResult typeCheck(TypeEnv E) throws TypeError;
 
     /**
      * relies on side effect

@@ -17,7 +17,7 @@ public class Ref extends UnaryExpr {
         return "(ref " + e + ")";
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         // TODO
         return null;
     }

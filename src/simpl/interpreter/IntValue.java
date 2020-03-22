@@ -13,7 +13,6 @@ public class IntValue extends Value {
     }
 
     @Override public boolean equals(Object other) {
-        // TODO
-        return false;
+        return (other instanceof IntValue) && (n == ((IntValue) other).n);
     }
 }

@@ -17,7 +17,7 @@ public class Cons extends BinaryExpr {
         return "(" + l + " :: " + r + ")";
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         // TODO
         return null;
     }

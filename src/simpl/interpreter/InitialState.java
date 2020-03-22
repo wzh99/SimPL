@@ -7,6 +7,7 @@ public class InitialState extends State {
     }
 
     private static Env initialEnv(Env E) {
+        // Add built-in functions
         // TODO
         return null;
     }

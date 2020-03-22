@@ -21,7 +21,7 @@ public class Cond extends Expr {
         return "(if " + e1 + " then " + e2 + " else " + e3 + ")";
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         // TODO
         return null;
     }

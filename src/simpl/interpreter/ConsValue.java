@@ -10,12 +10,17 @@ public class ConsValue extends Value {
     }
 
     public String toString() {
-        // TODO
-        return null;
+        return "list@" + len();
     }
 
     @Override public boolean equals(Object other) {
-        // TODO
-        return false;
+        if (!(other instanceof ConsValue))
+            return false;
+        var cons = (ConsValue) other;
+        return v1.equals(cons.v1) && v2.equals(cons.v2);
+    }
+
+    private int len() {
+        return v2 instanceof NilValue ? 1 : (((ConsValue) v2).len() + 1);
     }
 }

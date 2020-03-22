@@ -17,7 +17,7 @@ public class Pair extends BinaryExpr {
         return "(pair " + l + " " + r + ")";
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         // TODO
         return null;
     }

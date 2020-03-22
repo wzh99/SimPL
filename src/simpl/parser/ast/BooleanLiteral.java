@@ -21,7 +21,7 @@ public class BooleanLiteral extends Expr {
         return "" + b;
     }
 
-    @Override public TypeResult typecheck(TypeEnv E) throws TypeError {
+    @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         return TypeResult.of(Type.BOOL);
     }
 
