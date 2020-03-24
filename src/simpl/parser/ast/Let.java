@@ -1,5 +1,6 @@
 package simpl.parser.ast;
 
+import simpl.interpreter.Env;
 import simpl.interpreter.RuntimeError;
 import simpl.interpreter.State;
 import simpl.interpreter.Value;
@@ -24,12 +25,14 @@ public class Let extends Expr {
     }
 
     @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
-        // TODO
-        return null;
+        var t1 = e1.typeCheck(E);
+        var t2 = e2.typeCheck(TypeEnv.of(E, x, t1.t)); // bind t1 to x
+        var subst = t1.s.compose(t2.s);
+        return TypeResult.of(subst, subst.apply(t2.t));
     }
 
     @Override public Value eval(State s) throws RuntimeError {
-        // TODO
-        return null;
+        var v1 = e1.eval(s);
+        return e2.eval(State.of(Env.of(s.E, x, v1), s.M, s.p)); // bind v1 to x
     }
 }

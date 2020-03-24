@@ -19,7 +19,7 @@ public final class RefType extends Type {
         else if (other instanceof RefType) {
             t.unify(((RefType) other).t);
         }
-        throw new TypeMismatchError();
+        throw new TypeMismatchError(this, other);
     }
 
     @Override public boolean contains(TypeVar tv) {

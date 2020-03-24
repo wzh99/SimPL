@@ -1,5 +1,6 @@
 package simpl.parser.ast;
 
+import simpl.interpreter.RecValue;
 import simpl.interpreter.RuntimeError;
 import simpl.interpreter.State;
 import simpl.interpreter.Value;
@@ -21,12 +22,26 @@ public class Name extends Expr {
     }
 
     @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
-        // TODO
-        return null;
+        // Get type from type environment
+        var ty = E.get(x);
+        if (ty == null) {
+            throw new TypeError(String.format("symbol %s not found", x));
+        }
+        return TypeResult.of(ty);
     }
 
     @Override public Value eval(State s) throws RuntimeError {
-        // TODO
-        return null;
+        // Get value from environment
+        var val = s.E.get(x);
+        if (val == null) {
+            throw new RuntimeError(String.format("symbol %s not found", x));
+        }
+        // Further evaluate if the name is bound to recursive function
+        if (val instanceof RecValue) {
+            var rec = new Rec(x, ((RecValue) val).e);
+            // Restore environment recorded by `RecValue`
+            return rec.eval(State.of(((RecValue) val).E, s.M, s.p));
+        }
+        return val;
     }
 }

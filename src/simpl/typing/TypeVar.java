@@ -28,7 +28,7 @@ public class TypeVar extends Type {
             throw new TypeCircularityError();
         }
         else {
-            // Replace this type variable with that concrete type..
+            // Replace this type variable with that type.
             return Substitution.of(this, other);
         }
     }

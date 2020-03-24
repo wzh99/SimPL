@@ -20,6 +20,6 @@ public class FunValue extends Value {
     }
 
     @Override public boolean equals(Object other) {
-        return false; // not equality type
+        return false;
     }
 }

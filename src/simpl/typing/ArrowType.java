@@ -20,7 +20,7 @@ public final class ArrowType extends Type {
         else if (other instanceof ArrowType) {
             return t1.unify(((ArrowType) other).t1).compose(t2.unify(((ArrowType) other).t2));
         }
-        return null;
+        throw new TypeMismatchError(this, other);
     }
 
     @Override public boolean contains(TypeVar tv) {

@@ -30,6 +30,10 @@ public class Env {
         this.v = v;
     }
 
+    public static Env of(Env E, Symbol x, Value v) {
+        return new Env(E, x, v);
+    }
+
     public Value get(Symbol y) {
         assert E != null;
         return x == y ? v : E.get(y);

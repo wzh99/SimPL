@@ -1,8 +1,6 @@
 package simpl.parser.ast;
 
-import simpl.interpreter.RuntimeError;
-import simpl.interpreter.State;
-import simpl.interpreter.Value;
+import simpl.interpreter.*;
 
 public class Greater extends RelExpr {
 
@@ -15,7 +13,14 @@ public class Greater extends RelExpr {
     }
 
     @Override public Value eval(State s) throws RuntimeError {
-        // TODO
-        return null;
+        var lhsVal = l.eval(s);
+        if (!(lhsVal instanceof IntValue)) {
+            throw new RuntimeError("lhs is not integer");
+        }
+        var rhsVal = r.eval(s);
+        if (!(rhsVal instanceof IntValue)) {
+            throw new RuntimeError("rhs is not integer");
+        }
+        return new BoolValue(((IntValue) lhsVal).n > ((IntValue) rhsVal).n);
     }
 }

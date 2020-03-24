@@ -18,12 +18,17 @@ public class Seq extends BinaryExpr {
     }
 
     @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
-        // TODO
-        return null;
+        // Check lhs statement
+        var lhsTy = l.typeCheck(E);
+        // Check rhs statement
+        var rhsTy = r.typeCheck(E);
+        // Return type of rhs
+        var subst = lhsTy.s.compose(rhsTy.s);
+        return TypeResult.of(subst, subst.apply(rhsTy.t));
     }
 
     @Override public Value eval(State s) throws RuntimeError {
-        // TODO
-        return null;
+        l.eval(s);
+        return r.eval(s);
     }
 }

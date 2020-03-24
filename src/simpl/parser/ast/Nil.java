@@ -3,9 +3,7 @@ package simpl.parser.ast;
 import simpl.interpreter.RuntimeError;
 import simpl.interpreter.State;
 import simpl.interpreter.Value;
-import simpl.typing.TypeEnv;
-import simpl.typing.TypeError;
-import simpl.typing.TypeResult;
+import simpl.typing.*;
 
 public class Nil extends Expr {
 
@@ -14,12 +12,11 @@ public class Nil extends Expr {
     }
 
     @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
-        // TODO
-        return null;
+        var elemTv = new TypeVar(true);
+        return TypeResult.of(new ListType(elemTv));
     }
 
     @Override public Value eval(State s) throws RuntimeError {
-        // TODO
-        return null;
+        return Value.NIL;
     }
 }

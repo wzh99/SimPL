@@ -16,7 +16,7 @@ final class UnitType extends Type {
         if (other instanceof UnitType) {
             return Substitution.IDENTITY;
         }
-        throw new TypeMismatchError();
+        throw new TypeMismatchError(this, other);
     }
 
     @Override public boolean contains(TypeVar tv) {

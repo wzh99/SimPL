@@ -9,7 +9,7 @@ public final class ListType extends Type {
     }
 
     @Override public boolean isEqualityType() {
-        return true;
+        return t.isEqualityType();
     }
 
     @Override public Substitution unify(Type other) throws TypeError {
@@ -17,9 +17,9 @@ public final class ListType extends Type {
             return other.unify(this);
         }
         else if (other instanceof ListType) {
-            t.unify(((ListType) other).t);
+            return t.unify(((ListType) other).t);
         }
-        throw new TypeMismatchError();
+        throw new TypeMismatchError(this, other);
     }
 
     @Override public boolean contains(TypeVar tv) {

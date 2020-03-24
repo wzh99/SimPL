@@ -10,7 +10,7 @@ public final class PairType extends Type {
     }
 
     @Override public boolean isEqualityType() {
-        return true;
+        return t1.isEqualityType() && t2.isEqualityType();
     }
 
     @Override public Substitution unify(Type other) throws TypeError {
@@ -20,7 +20,7 @@ public final class PairType extends Type {
         else if (other instanceof PairType) {
             return t1.unify(((PairType) other).t1).compose(t2.unify(((PairType) other).t2));
         }
-        throw new TypeMismatchError();
+        throw new TypeMismatchError(this, other);
     }
 
     @Override public boolean contains(TypeVar tv) {
