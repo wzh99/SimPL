@@ -28,10 +28,11 @@ public class Ref extends UnaryExpr {
         // Evaluate the expression to be stored
         var cellVal = e.eval(s);
         // Get pointer for this cell
-        var curPtr = s.p.get();
-        s.p.set(curPtr + 1);
-        s.M.put(curPtr, cellVal);
+        var ptr = s.M.alloc(s);
+        s.M.write(ptr, cellVal);
+        // Print address of allocated cell to test GC
+        // System.out.println("ref@" + curPtr);
         // Return reference
-        return new RefValue(curPtr);
+        return new RefValue(ptr);
     }
 }

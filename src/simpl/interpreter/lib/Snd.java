@@ -9,7 +9,6 @@ import simpl.typing.TypeResult;
 public class Snd extends FunValue {
 
     public Snd() {
-        // TODO
         super(Env.empty, Symbol.symbol("x"), new Expr() {
             Symbol x = Symbol.symbol("x");
 
@@ -18,7 +17,7 @@ public class Snd extends FunValue {
             }
 
             @Override public Value eval(State s) throws RuntimeError {
-                var pairVal = s.E.get(x);
+                var pairVal = s.E.get(x, s);
                 if (!(pairVal instanceof PairValue)) {
                     throw new RuntimeError("not a pair");
                 }

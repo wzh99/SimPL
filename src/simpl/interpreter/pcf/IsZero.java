@@ -17,7 +17,7 @@ public class IsZero extends FunValue {
             }
 
             @Override public Value eval(State s) throws RuntimeError {
-                var intVal = s.E.get(x);
+                var intVal = s.E.get(x, s);
                 if (!(intVal instanceof IntValue)) {
                     throw new RuntimeError("not an integer");
                 }

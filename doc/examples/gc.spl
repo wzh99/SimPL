@@ -1,0 +1,13 @@
+let a = ref 0 in
+    let b = ref 1 in
+        b := 2
+    end;
+    let d =
+        let c = ref 3 in
+            ref 4;
+            ref 5;
+            c
+        end in
+        !d
+    end
+end

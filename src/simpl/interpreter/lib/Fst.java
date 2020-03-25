@@ -19,7 +19,7 @@ public class Fst extends FunValue {
             }
 
             @Override public Value eval(State s) throws RuntimeError {
-                var pairVal = s.E.get(x);
+                var pairVal = s.E.get(x, s);
                 if (!(pairVal instanceof PairValue)) {
                     throw new RuntimeError("not a pair");
                 }

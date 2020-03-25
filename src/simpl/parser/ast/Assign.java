@@ -45,7 +45,7 @@ public class Assign extends BinaryExpr {
             throw new RuntimeError("not a reference");
         }
         var assignVal = r.eval(s);
-        s.M.put(((RefValue) refVal).p, assignVal);
+        s.M.write(((RefValue) refVal).p, assignVal);
         return Value.UNIT;
     }
 }

@@ -41,14 +41,20 @@ public class App extends BinaryExpr {
     }
 
     @Override public Value eval(State s) throws RuntimeError {
-        // Evaluate lhs and rhs
         var lhsVal = l.eval(s);
         if (!(lhsVal instanceof FunValue)) {
             throw new RuntimeError("lhs is not a function");
         }
-        var argVal = r.eval(s);
-        // Substitute argument for parameter
         var fnVal = (FunValue) lhsVal;
-        return fnVal.e.eval(State.of(Env.of(fnVal.E, fnVal.x, argVal), s.M, s.p));
+
+        if (EvalMode.LAZY) {
+            // Lazy evaluation
+            return fnVal.e.eval(State.of(Env.of(fnVal.E, fnVal.x, r, s.E), s.M, s.p));
+        }
+        else {
+            // Eager evaluation
+            var argVal = r.eval(s);
+            return fnVal.e.eval(State.of(Env.of(fnVal.E, fnVal.x, argVal), s.M, s.p));
+        }
     }
 }

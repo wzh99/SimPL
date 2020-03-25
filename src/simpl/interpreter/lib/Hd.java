@@ -17,7 +17,7 @@ public class Hd extends FunValue {
             }
 
             @Override public Value eval(State s) throws RuntimeError {
-                var listVal = s.E.get(x);
+                var listVal = s.E.get(x, s);
                 if (!(listVal instanceof ConsValue)) {
                     throw new RuntimeError("not cons");
                 }

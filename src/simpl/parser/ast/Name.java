@@ -32,7 +32,7 @@ public class Name extends Expr {
 
     @Override public Value eval(State s) throws RuntimeError {
         // Get value from environment
-        var val = s.E.get(x);
+        var val = s.E.get(x, s);
         if (val == null) {
             throw new RuntimeError(String.format("symbol %s not found", x));
         }

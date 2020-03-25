@@ -39,6 +39,6 @@ public class Deref extends UnaryExpr {
             throw new RuntimeError("not a reference");
         }
         // Read memory to get content of the reference cell
-        return s.M.get(((RefValue) refVal).p);
+        return s.M.read(((RefValue) refVal).p);
     }
 }

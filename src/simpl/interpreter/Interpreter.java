@@ -23,11 +23,11 @@ public class Interpreter {
             System.out.println("syntax error");
         }
         catch (TypeError e) {
-//            System.err.printf("%s\n", e);
+            // System.err.printf("%s\n", e);
             System.out.println("type error");
         }
         catch (RuntimeError e) {
-            //            System.err.printf("%s\n", e);
+            // System.err.printf("%s\n", e);
             System.out.println("runtime error");
         }
         catch (Exception e) {
@@ -42,6 +42,7 @@ public class Interpreter {
     }
 
     public static void main(String[] args) {
+        // Provided programs
         interpret("doc/examples/plus.spl");
         interpret("doc/examples/factorial.spl");
         interpret("doc/examples/gcd1.spl");
@@ -56,5 +57,8 @@ public class Interpreter {
         interpret("doc/examples/pcf.fibonacci.spl");
         interpret("doc/examples/pcf.twice.spl");
         interpret("doc/examples/pcf.lists.spl");
+
+        // Programs written by myself
+        interpret("doc/examples/gc.spl");
     }
 }
