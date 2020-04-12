@@ -18,7 +18,7 @@ parser code {:
 terminal NIL;
 terminal REF;
 terminal FN, REC;
-terminal LET, IN, END;
+terminal LET, AND, IN, END;
 terminal IF, THEN, ELSE;
 terminal WHILE, DO;
 terminal TRUE, FALSE;
@@ -78,6 +78,7 @@ e ::= NUM:n {: RESULT = new IntegerLiteral(n.intValue()); :}
     | e:l SEMI e:r {: RESULT = new Seq(l, r); :}
     | e:l e:r {: RESULT = new App(l, r); :} %prec APP
     | LET ID:x EQ e:e1 IN e:e2 END {: RESULT = new Let(symbol(x), e1, e2); :}
+    | LET ID:x EQ e:e1 AND ID:y EQ e:e2 IN e:e3 END {: RESULT = new LetAnd(symbol(x), e1, symbol(y), e2, e3); :}
     | IF e:e1 THEN e:e2 ELSE e:e3 {: RESULT = new Cond(e1, e2, e3); :}
     | WHILE e:e1 DO e:e2 {: RESULT = new Loop(e1, e2); :}
     | UNIT {: RESULT = new Unit(); :}

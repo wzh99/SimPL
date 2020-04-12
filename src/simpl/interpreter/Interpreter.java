@@ -27,7 +27,7 @@ public class Interpreter {
             System.out.println("type error");
         }
         catch (RuntimeError e) {
-            // System.err.printf("%s\n", e);
+             System.err.printf("%s\n", e);
             System.out.println("runtime error");
         }
         catch (Exception e) {
@@ -60,5 +60,6 @@ public class Interpreter {
 
         // Programs written by myself
         interpret("doc/examples/gc.spl");
+        interpret("doc/examples/mrc.even.spl");
     }
 }

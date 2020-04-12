@@ -6,7 +6,7 @@
 
 ### Objective
 
-In this project I am required to implement an interpreter for the programming language SimPL. SimPL is a simplified dialect of ML, which can be used for both functional and imperative programming. 
+In this project I am asked to implement an interpreter for the programming language SimPL. SimPL is a simplified dialect of ML, which can be used for both functional and imperative programming. 
 
 ### Project Structure
 
@@ -110,7 +110,7 @@ Environment $E$ stores mapping from names to values. It can be composed with ano
 
 #### Memory
 
-Memory $M$ stores mapping from integer addresses to values. Memory pointer $p$ stores the address for next reference cell. It can also be understood as the number of total reference cells at that time. This pointer helps allocation of new reference cells. 
+Memory $M$ stores mappings from integer addresses to values. Memory pointer $p$ stores the address for next reference cell. It can also be understood as the number of total reference cells at that time. This pointer helps allocation of new reference cells. 
 
 ### Values
 
@@ -144,7 +144,7 @@ The pattern is quite simple. Just call `eval` on sub-expressions according to th
 
 #### Name-Value Binding
 
-Environment $E$ stores all name-value bindings at runtime. It is queried when evaluating `Name` expressions. A new environment can be created by composing a new binding with a previous environment. There are three places where new binidngs are created: `App`, `Let` and `Rec`. Name bindings created in `eval` method of `App` and `Let` are straightforward. `eval` method of `Rec` also create new binding, but it is stored together with previous environment in `RecValue`, instead of affecting machine state.  
+Environment $E$ stores all name-value bindings at runtime. It is queried when evaluating `Name` expressions. A new environment can be created by composing a new binding with a previous environment. There are three places where new bindings are created: `App`, `Let` and `Rec`. Name bindings created in `eval` method of `App` and `Let` are straightforward. `eval` method of `Rec` also create new binding, but the binding is stored in environment as part of the closure, instead of affecting machine state.  
 
 #### Reference Cells 
 
@@ -227,7 +227,9 @@ public DefaultTypeEnv() {
 
 #### Implementation
 
-In SimPL interpreter, garbage collection means freeing reference cells that can no longer be used, allowing these locations to be allocated again in later evaluation. The key problem is how to know a reference cell is used. In SimPL, we can know this by checking if that reference cell is bound to one or more names. 
+In SimPL interpreter, garbage collection means freeing reference cells that can no longer be used, allowing these locations to be allocated again in later evaluation. The key problem is how to know a reference cell is used. In SimPL, a reference is used means it is bound to one or more names. The most  convenient way to know this is to check the environment. If the environment contains mapping to this reference cell, it is used. Otherwise, it is not, and we can free this cell for a later allocation. 
+
+Thanks to encapsulation work done before, only `alloc` method in `Mem` needs to be modified. 
 
 #### Demonstration
 
@@ -237,9 +239,15 @@ In SimPL interpreter, garbage collection means freeing reference cells that can 
 
 #### Demonstration
 
+### Mutually Recursive Combinator
+
+#### Implementation
+
+#### Demonstration
+
 ### Polymorphic Type
 
-By implementing type inference, the imterpreter already supports polymorphic type. The details are  discussed in previous sections.
+By implementing type inference, the interpreter already supports polymorphic type. The details are  discussed in previous sections.
 
 
 

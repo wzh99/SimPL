@@ -48,9 +48,12 @@ public class Env {
     }
 
     public Value get(Symbol y, State s) throws RuntimeError {
-        assert E != null;
-        if (x != y) // symbol not found at this level
-            return E.get(y, s);
+        if (x != y) { // symbol not found at this level
+            if (E == null)
+                return null;
+            else
+                return E.get(y, s);
+        }
         if (v == null) {
             assert e != null;
             return e.eval(State.of(Ee, s.M, s.p));

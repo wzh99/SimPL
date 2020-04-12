@@ -1,0 +1,6 @@
+let iseven = fn n =>
+    if iszero n then true else isodd (pred n)
+and isodd = fn n =>
+    if iszero n then false else iseven (pred n)
+in iseven 3
+end

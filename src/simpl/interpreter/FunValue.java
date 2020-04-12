@@ -5,7 +5,7 @@ import simpl.parser.ast.Expr;
 
 public class FunValue extends Value {
 
-    public final Env E;
+    public Env E;
     public final Symbol x;
     public final Expr e;
 

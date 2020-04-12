@@ -38,7 +38,7 @@ public class Fn extends Expr {
     }
 
     @Override public Value eval(State s) throws RuntimeError {
-        // Lambda abstraction is already a value, store the environment.
+        // Store the closure
         return new FunValue(s.E, x, e);
     }
 }

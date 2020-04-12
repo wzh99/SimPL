@@ -48,6 +48,7 @@ Whitespace = {LineTerm}|[ \t\f]
     "fn"      { return token(FN); }
     "rec"     { return token(REC); }
     "let"     { return token(LET); }
+    "and"     { return token(AND); }
     "in"      { return token(IN); }
     "end"     { return token(END); }
     "if"      { return token(IF); }
