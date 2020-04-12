@@ -33,8 +33,7 @@ public class Rec extends Expr {
         var subst = resTr.s.compose(recTv.unify(resTy));
         resTy = subst.apply(resTy);
 
-        // Return typing result. Result type is chosen because it usually contains more concrete
-        // types.
+        // Return typing result.
         return TypeResult.of(subst, resTy);
     }
 

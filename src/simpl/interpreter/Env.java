@@ -49,7 +49,7 @@ public class Env {
 
     public Value get(Symbol y, State s) throws RuntimeError {
         assert E != null;
-        if (x != y)
+        if (x != y) // symbol not found at this level
             return E.get(y, s);
         if (v == null) {
             assert e != null;

@@ -24,12 +24,15 @@ public class Fn extends Expr {
     @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         // Define parameter type as type variable
         var paramTv = new TypeVar(true);
+
         // Infer result type in expression
         var resTr = e.typeCheck(TypeEnv.of(E, x, paramTv));
         var resTy = resTr.t;
         var subst = resTr.s;
+
         // Substitute possibly concrete type for type variable
         var paramTy = subst.apply(paramTv);
+
         // Return type result
         return TypeResult.of(subst, new ArrowType(paramTy, resTy));
     }
