@@ -42,7 +42,7 @@ public class LetAnd extends Expr {
     }
 
     @Override public Value eval(State s) throws RuntimeError {
-        if (EvalMode.LAZY)
+        if (Feature.LAZY)
             throw new RuntimeError("cannot evaluate in lazy mode");
 
         // Evaluate either function without binding
@@ -53,7 +53,7 @@ public class LetAnd extends Expr {
         if (!(v2 instanceof FunValue))
             throw new RuntimeError("v2 is not a function");
 
-        // Modify closures to create correct name-value binding
+        // Modify closures to create circular name-value binding
         var env = Env.of(Env.of(s.E, x, v1), y, v2);
         ((FunValue) v1).E = env;
         ((FunValue) v2).E = env;

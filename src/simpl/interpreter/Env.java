@@ -7,7 +7,7 @@ public class Env {
 
     public final Env E;
     private final Symbol x;
-    public final Value v;
+    public Value v;
     private final Expr e;
     private final Env Ee;
 
@@ -54,13 +54,11 @@ public class Env {
             else
                 return E.get(y, s);
         }
-        if (v == null) {
+        if (v == null) { // not evaluated yet
             assert e != null;
-            return e.eval(State.of(Ee, s.M, s.p));
+            v = e.eval(State.of(Ee, s.M, s.p));
         }
-        else {
-            return v;
-        }
+        return v;
     }
 
     public Env clone() {

@@ -16,32 +16,35 @@ public class Mem extends HashMap<Integer, Value> {
     }
 
     public int alloc(State s) {
-        // The original version of allocation
-        /*var ptr = p.get();
-        p.set(ptr + 1);
-        return ptr;*/
+        if (Feature.GC) {
+            // Mark all cells that are bound to a name
+            var marked = new TreeSet<Integer>();
+            var env = s.E;
+            while (env != null) {
+                if (env.v instanceof RefValue)
+                    marked.add(((RefValue) env.v).p);
+                env = env.E;
+            }
 
-        // Mark all cells that are bound to a name
-        var marked = new TreeSet<Integer>();
-        var env = s.E;
-        while (env != null) {
-            if (env.v instanceof RefValue)
-                marked.add(((RefValue) env.v).p);
-            env = env.E;
+            // Extend address space if all cells are in use
+            if (marked.size() == s.p.get()) {
+                var ptr = s.p.get();
+                s.p.set(ptr + 1);
+                return ptr;
+            }
+
+            // Get the first available cell in current address space
+            for (int i = 0; i < s.p.get(); i++) {
+                if (!marked.contains(i))
+                    return i;
+            }
+            throw new RuntimeException("unreachable");
         }
-
-        // Extend address space if all cells are in use
-        if (marked.size() == s.p.get()) {
+        else {
+            // The original version of allocation
             var ptr = s.p.get();
             s.p.set(ptr + 1);
             return ptr;
         }
-
-        // Get the first available cell in current address space
-        for (int i = 0; i < s.p.get(); i++) {
-            if (!marked.contains(i))
-                return i;
-        }
-        throw new RuntimeException("unreachable");
     }
 }

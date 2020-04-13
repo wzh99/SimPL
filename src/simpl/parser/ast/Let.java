@@ -29,7 +29,7 @@ public class Let extends Expr {
     }
 
     @Override public Value eval(State s) throws RuntimeError {
-        if (EvalMode.LAZY) {
+        if (Feature.LAZY) {
             // Lazy evaluation
             return e2.eval(State.of(Env.of(s.E, x, e1, s.E), s.M, s.p));
         }

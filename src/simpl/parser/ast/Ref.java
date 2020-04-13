@@ -31,7 +31,7 @@ public class Ref extends UnaryExpr {
         var ptr = s.M.alloc(s);
         s.M.write(ptr, cellVal);
         // Print address of allocated cell to test GC
-        // System.out.println("ref@" + curPtr);
+        // System.out.println("ref@" + ptr);
         // Return reference
         return new RefValue(ptr);
     }

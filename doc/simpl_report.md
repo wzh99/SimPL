@@ -48,7 +48,7 @@ The discussion may be divided with respect to different categories of types: 'Pr
 
 `contains` and `replace` are related to type substitution. `contains` tests whether a certian type variable ever appears in this type, and `replace` replaces a type variable with another type if that type variable appears in this type. 
 
-Primitive types cannot contain any type variable, and they cannot be replaced. Compound types may contain type variables, depending on whether its components contains that. And it can call `replace` on its components, and then combine them. Type variable contains another type variable if it shares the same name with that, and it replaces by changing its identifier to the one of that.
+Primitive types cannot contain any type variable, and they cannot be replaced. Compound types may contain type variables, depending on whether its components contains that. And it can call `replace` on its components, and then combine the resulting substitutions. Type variable contains another type variable if it shares the same name with that, and it replaces by changing its identifier to the one of that.
 
 #### Unification
 
@@ -144,7 +144,7 @@ The pattern is quite simple. Just call `eval` on sub-expressions according to th
 
 #### Name-Value Binding
 
-Environment $E$ stores all name-value bindings at runtime. It is queried when evaluating `Name` expressions. A new environment can be created by composing a new binding with a previous environment. There are three places where new bindings are created: `App`, `Let` and `Rec`. Name bindings created in `eval` method of `App` and `Let` are straightforward. `eval` method of `Rec` also create new binding, but the binding is stored in environment as part of the closure, instead of affecting machine state.  
+Environment $E$ stores all name-value bindings at runtime. It is queried when evaluating `Name` expressions. A new environment can be created by composing a new binding with a previous environment. There are three places where new bindings are created: `App`, `Let` and `Rec`. Name bindings created in `eval` method of `App` and `Let` are straightforward. `eval` method of `Rec` also create new binding, but the binding is stored in environment of the closure, instead of altering machine state.  
 
 #### Reference Cells 
 
@@ -173,7 +173,7 @@ There are seven predefined functions that I have to implement: four library func
 
 ### Semantics
 
-Semantics for predefined functions are defined by calling the constructor of its super class `FunValue`. Top level functions are in empty environment. Its parameter name can be arbitrary, as long as it is consistent with the one in function body. The internal expresson is anonymous subclass of `Expr`. There is nothing to do with `typeCheck` method because it will never be called. `eval` method is our concern. The implementation is quite straightforward. Finally, the implementation looks like this: 
+Semantics for predefined functions are defined by calling the constructor of its super class `FunValue`. Top level functions are in empty environment. Its parameter name can be arbitrary, as long as it is consistent with the one in function body. The body expresson is an anonymous subclass of `Expr`. There is nothing to do with `typeCheck` method because it will never be called. `eval` method is our concern. The implementation is quite straightforward. Finally, the implementation looks like this: 
 
 ```java
 super(Env.empty, Symbol.symbol("x"), new Expr() {
@@ -227,23 +227,353 @@ public DefaultTypeEnv() {
 
 #### Implementation
 
-In SimPL interpreter, garbage collection means freeing reference cells that can no longer be used, allowing these locations to be allocated again in later evaluation. The key problem is how to know a reference cell is used. In SimPL, a reference is used means it is bound to one or more names. The most  convenient way to know this is to check the environment. If the environment contains mapping to this reference cell, it is used. Otherwise, it is not, and we can free this cell for a later allocation. 
+In SimPL interpreter, garbage collection means freeing reference cells that can no longer be used, allowing these locations to be allocated again in later evaluation. The key problem is how to know a reference cell is used. In SimPL, a reference is in use means it is bound to one or more names. The most  convenient way to know this is to check the environment. If the environment contains mapping to this reference cell, it is used. Otherwise, it is not, and we can free this cell for a later allocation. 
 
-Thanks to encapsulation work done before, only `alloc` method in `Mem` needs to be modified. 
+Thanks to encapsulation work done before, only `alloc` method in `Mem` needs to be modified. Mark-sweep algorithm is implemented here. The method iterates through all the name-value bindings in the environment, and marks all the cells in use. If all cells are in use, it increments the address counter and return address for the new cell. Otherwise, it returns the first cell not in use. The code is shown as follows:
 
-#### Demonstration
+```java
+public int alloc(State s) {
+    // Mark all cells that are bound to a name
+    var marked = new TreeSet<Integer>();
+    var env = s.E;
+    while (env != null) {
+        if (env.v instanceof RefValue)
+            marked.add(((RefValue) env.v).p);
+        env = env.E;
+    }
+
+    // Extend address space if all cells are in use
+    if (marked.size() == s.p.get()) {
+        var ptr = s.p.get();
+        s.p.set(ptr + 1);
+        return ptr;
+    }
+
+    // Get the first available cell in current address space
+    for (int i = 0; i < s.p.get(); i++) {
+        if (!marked.contains(i))
+            return i;
+    }
+    throw new RuntimeException("unreachable");
+}
+```
+
+#### Result
+
+Consider program `gc.spl`:
+
+```ocaml
+let a = ref 0 in
+    let b = ref 1 in
+        b := 2
+    end;
+    let d =
+        let c = ref 3 in
+            ref 4;
+            ref 5;
+            c
+        end in
+        !d
+    end
+end
+```
+
+This example demonstrates several possible cases where a reference cell could be used. The first cell is in use throughout the whole program. The second is bound to `b` but later lives out its scope. The third is bound to `c` first, and then `d`. The fourth and fifth are never bound to any name. Without GC, five difference cells are created. But with GC, only three are actually created. 
+
+Let's do a little hack on the `eval` method of `Ref` and see what happens:
+
+```java
+@Override public Value eval(State s) throws RuntimeError {
+    var cellVal = e.eval(s);
+    var ptr = s.M.alloc(s);
+    s.M.write(ptr, cellVal);
+    System.out.println("ref@" + ptr); // print address of allocated cell
+    return new RefValue(ptr);
+}
+```
+
+Interesting part of output:
+
+```
+ref@0
+ref@1
+ref@1
+ref@2
+ref@2
+```
+
+It can be seen that only three different cells are allocated. GC works properly. 
 
 ### Lazy Evaluation
 
 #### Implementation
 
-#### Demonstration
+In eager (call-by-value) evaluation strategy, $E$ stores mappings from name to value. However, in lazy evaluation, $E$ could also store mappings from name to expression *and* environment. For any expression whose value should be bound to a name in eager evaluation, we directly create a mapping from that name to the expression, plus the environment required to evaluate this expression. When a name is being evaluated, the interpreter should first evaluate that expression with corresponding environment, replace that entry with name-value binding, and finally return the value.
+
+The implementation is divided to two parts: creation of the mappings and evaluation of mapped expressions. To support this feature, `Env` class should be firstly modified as follows:
+
+```java
+public class Env {
+    public final Env E;
+    private final Symbol x;
+    public Value v;
+    private final Expr e;
+    private final Env Ee;
+    
+    // Name-expression-environment mapping
+    public Env(Env E, Symbol x, Expr e, Env Ee) {
+        this.E = E;
+        this.x = x;
+        this.v = null;
+        this.e = e;
+        this.Ee = Ee;
+    }
+
+    public static Env of(Env E, Symbol x, Expr e, Env Ee) {
+        return new Env(E, x, e, Ee);
+    }
+    
+    /* Other members ... */
+}
+```
+
+Only two places should create this kind of mapping: `App` and `Let`. `Rec` also creates new mapping, but it actually maps to a `RecValue`, and no expression or environment is involved. Evaluation of mapped expression is done in `get` method of `Env`. The algorithm is already stated, so I just show the code here: 
+
+```java
+ public Value get(Symbol y, State s) throws RuntimeError {
+     if (x != y) { // symbol not found at this level
+         if (E == null)
+             return null;
+         else
+             return E.get(y, s);
+     }
+     if (v == null) { // not evaluated yet
+         assert e != null;
+         v = e.eval(State.of(Ee, s.M, s.p));
+     }
+     return v;
+ }
+```
+
+#### Result
+
+Run all the provided test cases with lazy evaluation and GC enabled. 
+
+```
+doc/examples/plus.spl
+int
+3
+doc/examples/factorial.spl
+int
+24
+doc/examples/gcd1.spl
+int
+1029
+doc/examples/gcd2.spl
+int
+0
+doc/examples/max.spl
+int
+2
+doc/examples/sum.spl
+int
+6
+doc/examples/map.spl
+((tv59 -> tv66) -> (tv59 list -> tv66 list))
+fun
+doc/examples/pcf.sum.spl
+(int -> (int -> int))
+fun
+doc/examples/pcf.even.spl
+(int -> bool)
+fun
+doc/examples/pcf.minus.spl
+int
+46
+doc/examples/pcf.factorial.spl
+int
+720
+doc/examples/pcf.fibonacci.spl
+int
+6765
+```
+
+The output of programs are the same as in eager evaluation, except for `gcd2.spl` (see Appendix for reference). It is expected to output `1029`, but we got `0` instead. Let's consider this program:
+
+```ocaml
+let gcd = fn x => fn y =>
+    let a = ref x in
+    	let b = ref y in
+    		let c = ref 0 in
+    			(while !b <> 0 do c := !a; a := !b; b := !c % !b);
+    			!a
+    		end
+    	end
+    end
+in  gcd 34986 3087
+end
+```
+
+Since it is an imperative program, it is likely that the use of reference cells causes this problem. Let's take a look at address of each allocation, just like in the previous section:
+
+```
+ref@0
+ref@1
+ref@0
+```
+
+In call-by-value evaluation, three different cells should be created, but here we only got two. The first cell is bound to `b` in when evaluating `!b <> 0`, the second bound to `c` and the third to `a` when evaluating `c := !a`. The reason why `a` and `b` share the same cell is that the environment for `ref x` contains nothing. When evaluating `!a`, the allocation procedure with GC takes it for granted that all cells are not in use, so it assigns `ref@0` to `a`. If we follow the code, it is easy to find that value stored in `ref@0` is zero in the first iteration of `while` loop, and it exits the loop because `!b` is also zero. By `!a`, we get result `0` for this program.  
+
+We can draw a conclusion that GC could lead to surprising result for an imperative program in lazy evaluation. If we disable GC, and still run `gcd2.spl` in lazy mode, the result is correct:
+
+```
+doc/examples/gcd2.spl
+int
+1029
+```
 
 ### Mutually Recursive Combinator
 
+#### Design
+
+I have to extend the original SimPL definition to support this feature. When designing this syntax feature, I refer to [F# language reference](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/functions/recursive-functions-the-rec-keyword). In F#, the syntax for MRC looks like this:
+
+```F#
+let rec function1-nameparameter-list =
+function1-body
+and function2-nameparameter-list =
+function2-body
+```
+
+Combining this definition and characteristics of SimPL, I design syntax for MRC as follows:
+$$
+\begin{align}
+e::=\ &\dots &expressions \\
+|\quad&\mathtt{let}\ x=e\ \mathtt{and}\ x=e\ \mathtt{in}\ e\ \mathtt{end} &mutually\ recursive\ combinator
+\end{align}
+$$
+The evaluation rule is similar to E-Let, but somehow trickier than that. It seems that when evaluating $e_1$, $E$ have to contain mapping from $y$, and it requires $e_2$ to be evaluated first. But evaluation of $e_2$ also needs $x$ from environment, which requires $e_1$ to be evaluated first. Circularity is intrinsic for MRC here. There's a way to solve this. Since $e_1$ must be a function definition, it could evaluates to a closure, whose environment just contains neither $x$ or $y$. After evaluating $e_1$ and $e_2$ to two closures, add two mappings $x\mapsto(\mathtt{fun},E',s,e_1')$ and $y\mapsto(\mathtt{fun},E',t,e_2')$ to the environment, with the environment of both closures the newly created environment. That's why $E'$ appears on both sides of the third premise. 
+$$
+\frac{E,M,p;e_1\Downarrow M',p';(\mathtt{fun},E_1,s,e_1')\quad E,M',p';e_2\Downarrow M'',p'';(\mathtt{fun},E_2,t,e_2') \\ 
+E'=E[x\mapsto(\mathtt{fun},E',s,e_1')][y\mapsto(\mathtt{fun},E',t,e_2')]\quad E',M'',p'';e_3\Downarrow M''',p''';v}
+{E,M,p;\mathtt{let}\ x=e_1\ \mathtt{and}\ y=e_2\ \mathtt{in}\ e_3\Downarrow M''',p''';v}
+\tag{E-LetAnd}
+$$
+Similar circularity problem arises in terms of typing rule. We can solve this by assuming the type form of $e_1$ and $e_2$. Since $e_1$ and $e_2$ are all functions, they must have form $t\rightarrow t$. We can assume $e_1$ to be of type $t_1\rightarrow t_2$ and $e_2$ of type $t_3\rightarrow t_4$, where $t_i,i\in1..4$ are type variables, instead of concrete types. Types can be checked for $e_1$ and $e_2$, whose results are $t_1'\rightarrow t_2'$ and $t_3'\rightarrow t_4'$ respectively. Then we check type of $e_3$ with mapping $x:t_1'\rightarrow t_2'$ and $y:t_3'\rightarrow t_4'$, resulting $t$, which is the type for the whole expression. 
+$$
+\frac{\Gamma[y:t_3\rightarrow t_4]\vdash e_1:t_1'\rightarrow t_2'\quad \Gamma[x:t_1\rightarrow t_2]\vdash e_2:t_3'\rightarrow t_4'\quad \Gamma[x:t_1'\rightarrow t_2'][y:t_3'\rightarrow t_4']\vdash e_3:t}
+{\Gamma\vdash \mathtt{let}\ x=e_1\ \mathtt{and}\ y=e_2\ \mathtt{in}\ e_3:t} 
+\tag{T-LetAnd}
+$$
+
 #### Implementation
 
-#### Demonstration
+Since the syntax is defined by myself, I have to modify the grammar file and regenerate lexer and parser classes for the new grammar. In file `simpl.lex`, I add `and` keyword in `<YYINITIAL>` block. This enables lexer to recognize this keyword as a token.
+
+```
+<YYINITIAL> {
+	...
+	"and"     { return token(AND); }
+	...
+}
+```
+
+In `simpl.grm`, I first add `AND` as a terminal:
+
+```
+terminal LET, AND, IN, END;
+```
+
+Then specify the syntax of MRC:
+
+```
+e :== ...
+	| LET ID:x EQ e:e1 AND ID:y EQ e:e2 IN e:e3 END {: RESULT = new LetAnd(symbol(x), e1, symbol(y), e2, e3); :}
+	;
+```
+
+In package `parser.ast`, write a new class `LetAnd`:
+
+```java
+public class LetAnd extends Expr {
+    public Symbol x, y;
+    public Expr e1, e2, e3;
+
+    public LetAnd(Symbol x, Expr e1, Symbol y, Expr e2, Expr e3) {
+        this.x = x;
+        this.y = y;
+        this.e1 = e1;
+        this.e2 = e2;
+        this.e3 = e3;
+    }
+    
+    /* Other methods */
+}
+```
+
+Then run the `Makefile` script in `parser` directory, `Lexer` and `Parser` are automatically generated in this directory. The rest work is to implement `typeCheck` and `eval` methods. The implementation just follows the rules stated before.
+
+```java
+@Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
+    // Bind parametric arrow types to `x` and `y`
+    var xTy = new ArrowType(new TypeVar(true), new TypeVar(true));
+    var yTy = new ArrowType(new TypeVar(true), new TypeVar(true));
+
+    // Check types of both recursive functions
+    var env = TypeEnv.of(TypeEnv.of(E, x, xTy), y, yTy);
+    var e1Tr = e1.typeCheck(env);
+    var e2Tr = e2.typeCheck(env);
+    var subst = e1Tr.s.compose(e2Tr.s);
+    xTy = (ArrowType) subst.apply(xTy);
+    yTy = (ArrowType) subst.apply(yTy);
+
+    // Check type of expression
+    var e3Tr = e3.typeCheck(TypeEnv.of(TypeEnv.of(E, x, xTy), y, yTy));
+    subst.compose(e3Tr.s);
+    return TypeResult.of(subst, subst.apply(e3Tr.t));
+}
+
+@Override public Value eval(State s) throws RuntimeError {
+    // Evaluate either function without binding
+    var v1 = e1.eval(s);
+    if (!(v1 instanceof FunValue))
+        throw new RuntimeError("v1 is not a function");
+    var v2 = e2.eval(s);
+    if (!(v2 instanceof FunValue))
+        throw new RuntimeError("v2 is not a function");
+
+    // Modify closures to create circular name-value binding
+    var env = Env.of(Env.of(s.E, x, v1), y, v2);
+    ((FunValue) v1).E = env;
+    ((FunValue) v2).E = env;
+
+    // Evaluate the rest part
+    return e3.eval(State.of(env, s.M, s.p));
+}
+```
+
+#### Result
+
+Consider program `mrc.even.spl` which decides whether a number is even or odd:
+
+```ocaml
+let iseven = fn n =>
+    if iszero n then true else isodd (pred n)
+and isodd = fn n =>
+    if iszero n then false else iseven (pred n)
+in iseven 3
+end
+```
+
+This program contains two mutually recursive functions: `iseven` and `isodd`. I pass `3` to `iseven` so that either function will be called at least twice. This could test whether the environment is correct. Run the interpreter on this program and it outputs:
+
+```
+doc/examples/mrc.even.spl
+bool
+false
+```
+
+The typing and evaluation results are all correct. This feature is properly implemented.
 
 ### Polymorphic Type
 
@@ -255,7 +585,59 @@ By implementing type inference, the interpreter already supports polymorphic typ
 
 ### Notice
 
+* If there are too many levels of recursion in input program, JVM could possibly throws `StackOverflow` exception. If you are sure that the program will not cause infinite recursion, try set stack size of JVM larger through `-Xss` argument, for example `-Xss8m` if a stack of 8MB is desired. 
 
+* Two bonus features: GC and lazy evaluation, can be enabled and disabled by setting constants in `Feature` class in package `simpl.interpreter`. Whether to enable these features should be decided before compilation. Mutually recursive combinator just works in eager evaluation.
+
+    ```java
+    public class Feature {
+        // Whether to enable garbage collection
+        public static final boolean GC = true;
+        // Whether to enable lazy evaluation
+        public static final boolean LAZY = false;
+    }
+    ```
 
 ### Output
+
+Output of all provided test cases with eager (call-by-value) evaluation strategy and GC enabled. The exported `jar` also uses this configuration.
+
+```
+doc/examples/plus.spl
+int
+3
+doc/examples/factorial.spl
+int
+24
+doc/examples/gcd1.spl
+int
+1029
+doc/examples/gcd2.spl
+int
+1029
+doc/examples/max.spl
+int
+2
+doc/examples/sum.spl
+int
+6
+doc/examples/map.spl
+((tv59 -> tv66) -> (tv59 list -> tv66 list))
+fun
+doc/examples/pcf.sum.spl
+(int -> (int -> int))
+fun
+doc/examples/pcf.even.spl
+(int -> bool)
+fun
+doc/examples/pcf.minus.spl
+int
+46
+doc/examples/pcf.factorial.spl
+int
+720
+doc/examples/pcf.fibonacci.spl
+int
+6765
+```
 

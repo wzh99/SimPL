@@ -47,7 +47,7 @@ public class App extends BinaryExpr {
         }
         var fnVal = (FunValue) lhsVal;
 
-        if (EvalMode.LAZY) {
+        if (Feature.LAZY) {
             // Lazy evaluation
             return fnVal.e.eval(State.of(Env.of(fnVal.E, fnVal.x, r, s.E), s.M, s.p));
         }
