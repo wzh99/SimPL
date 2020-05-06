@@ -1,5 +1,7 @@
 package simpl.typing;
 
+import java.util.Set;
+
 public final class RefType extends Type {
 
     public Type t;
@@ -22,8 +24,15 @@ public final class RefType extends Type {
         throw new TypeMismatchError(this, other);
     }
 
-    @Override public boolean contains(TypeVar tv) {
+    @Override public Set<TypeVar> collect() {
+        return t.collect();
+    }
 
+    @Override public Type clone() {
+        return new RefType(t.clone());
+    }
+
+    @Override public boolean contains(TypeVar tv) {
         return false;
     }
 

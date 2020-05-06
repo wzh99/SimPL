@@ -21,14 +21,13 @@ public class App extends BinaryExpr {
         var fnTy = subst.apply(fnTr.t);
         var argTy = subst.apply(argTr.t);
 
-        // Infer return type
+        // Infer result type
         if (fnTy instanceof ArrowType) { // lhs known to be a function
             // Check conformance of parameter and argument
             var paramTy = ((ArrowType) fnTy).t1;
-            paramTy = subst.apply(paramTy);
             subst = subst.compose(argTy.unify(paramTy));
-            var retTy = subst.apply(((ArrowType) fnTy).t2);
-            return TypeResult.of(subst, retTy);
+            var resTy = subst.apply(((ArrowType) fnTy).t2);
+            return TypeResult.of(subst, resTy);
         }
         else if (fnTy instanceof TypeVar) { // a type variable
             // Infer result type of function

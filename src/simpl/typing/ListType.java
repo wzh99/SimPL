@@ -1,5 +1,7 @@
 package simpl.typing;
 
+import java.util.Set;
+
 public final class ListType extends Type {
 
     public Type t;
@@ -20,6 +22,14 @@ public final class ListType extends Type {
             return t.unify(((ListType) other).t);
         }
         throw new TypeMismatchError(this, other);
+    }
+
+    @Override public Set<TypeVar> collect() {
+        return t.collect();
+    }
+
+    @Override public Type clone() {
+        return new ListType(t.clone());
     }
 
     @Override public boolean contains(TypeVar tv) {

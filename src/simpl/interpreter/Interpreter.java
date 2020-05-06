@@ -23,11 +23,11 @@ public class Interpreter {
             System.out.println("syntax error");
         }
         catch (TypeError e) {
-            // System.err.println(e.getMessage());
+//            System.err.println(e.getMessage());
             System.out.println("type error");
         }
         catch (RuntimeError e) {
-            // System.err.println(e.getMessage());
+            //            System.err.println(e.getMessage());
             System.out.println("runtime error");
         }
         catch (Exception e) {
@@ -55,11 +55,11 @@ public class Interpreter {
         interpret("doc/examples/pcf.minus.spl");
         interpret("doc/examples/pcf.factorial.spl");
         interpret("doc/examples/pcf.fibonacci.spl");
-        // interpret("doc/examples/pcf.twice.spl");
-        // interpret("doc/examples/pcf.lists.spl");
+        interpret("doc/examples/pcf.twice.spl");
+        interpret("doc/examples/pcf.lists.spl");
 
         // Programs written by myself
-        interpret("doc/examples/gc.spl");
-        interpret("doc/examples/mrc.even.spl");
+        //        interpret("doc/examples/gc.spl");
+        //        interpret("doc/examples/mrc.even.spl");
     }
 }

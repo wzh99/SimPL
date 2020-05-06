@@ -1,5 +1,8 @@
 package simpl.typing;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public final class PairType extends Type {
 
     public Type t1, t2;
@@ -21,6 +24,17 @@ public final class PairType extends Type {
             return t1.unify(((PairType) other).t1).compose(t2.unify(((PairType) other).t2));
         }
         throw new TypeMismatchError(this, other);
+    }
+
+    @Override public Set<TypeVar> collect() {
+        var list = new HashSet<TypeVar>();
+        list.addAll(t1.collect());
+        list.addAll(t2.collect());
+        return list;
+    }
+
+    @Override public Type clone() {
+        return new PairType(t1.clone(), t2.clone());
     }
 
     @Override public boolean contains(TypeVar tv) {

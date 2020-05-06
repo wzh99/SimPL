@@ -1,5 +1,8 @@
 package simpl.typing;
 
+import java.util.HashSet;
+import java.util.Set;
+
 final class IntType extends Type {
 
     protected IntType() {
@@ -17,6 +20,14 @@ final class IntType extends Type {
             return Substitution.IDENTITY;
         }
         throw new TypeMismatchError(this, other);
+    }
+
+    @Override public Set<TypeVar> collect() {
+        return new HashSet<>();
+    }
+
+    @Override public Type clone() {
+        return new IntType();
     }
 
     @Override public boolean contains(TypeVar tv) {

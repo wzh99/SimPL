@@ -22,10 +22,10 @@ public class Let extends Expr {
     }
 
     @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
-        var t1 = e1.typeCheck(E);
-        var t2 = e2.typeCheck(TypeEnv.of(E, x, t1.t)); // bind t1 to x
-        var subst = t1.s.compose(t2.s);
-        return TypeResult.of(subst, subst.apply(t2.t));
+        var tr1 = e1.typeCheck(E);
+        var tr2 = e2.typeCheck(TypeEnv.ofGeneralized(E, x, tr1.t));
+        var subst = tr1.s.compose(tr2.s);
+        return TypeResult.of(subst, subst.apply(tr2.t));
     }
 
     @Override public Value eval(State s) throws RuntimeError {

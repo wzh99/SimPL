@@ -2,6 +2,8 @@
 
 ###### 王梓涵　517021911179
 
+[TOC]
+
 ## Introduction
 
 ### Objective
@@ -54,7 +56,7 @@ Primitive types cannot contain any type variable, and they cannot be replaced. C
 
 Type unification finds a substitution that can make a certain type uniform with another type. This algorithm is implemented in method `unify`. 
 
-At any type, if one but not both types is a type variable, and that type variable appears on the RHS, the two variables are swapped. Primitive type can only be unified with the same type, yielding an identity substitution. Compound type can only be unified with another compound type of the same kind, and then unifies its component pairwise. For other cases, report a type mismatch error. The substitution returns by the components should be composed. 
+For any type, if one but not both of the types is a type variable, and that type variable appears on the RHS, the two variables are swapped. Primitive type can only be unified with the same type, yielding an identity substitution. Compound type can only be unified with another compound type of the same kind, and then unifies its component pairwise. For other cases, report a type mismatch error. The substitution returns by the components should be composed. 
 
 For type variables, if another type is also a type variable, do nothing if they share the same name, or substitute that for this type if they don't. If that type still contains this type, there is a type circularity. The unification algorithm cannot handle this, so report a circularity error. 
 
@@ -82,15 +84,9 @@ Implementation of type checking are directed by typing rules listed in the langu
 
 Since there are tens of AST node classes in package `parser.ast` and many of them share the same pattern with the example shown above, discussing them all is tedious and meaningless. In the following I will just discuss some cases that need further consideration.
 
-#### `Fn`
-
-`Fn` node is special in that there is no way to know what the parameter type is. Here I can bind a type variable to the name of the parameter, and check type of function body. The type variable for the parameter may be unified with another type. Then the type checking algorithm can replace the type variable with that type, and return the infered type for this function.
-
-`Rec` node works in the similar way as `Fn`. The only difference is that the 'parameter' type and body type should be unified, and the unified type should be returned. 
-
 #### `App`
 
-It is straightforward if the type of function sub-expression of `App` is already an arrow type. But the case where it is a type variable needs special care. In this case, this type variable should be replaced with a parameterized arrow type, with type of argument sub-expression of `App` as its parameter type, and a new type variable as its body type. 
+It is straightforward if the type of left sub-expression of `App` is already an arrow type. But the case where it is a type variable needs special care. In this case, this type variable should be replaced with a parameterized arrow type, with type of argument sub-expression of `App` as its parameter type, and a new type variable as its result type. 
 
 #### `EqExpr`
 
@@ -396,6 +392,11 @@ int
 doc/examples/pcf.fibonacci.spl
 int
 6765
+doc/examples/pcf.twice.spl
+int
+16
+doc/examples/pcf.lists.spl
+type error
 ```
 
 The output of programs are the same as in eager evaluation, except for `gcd2.spl` (see Appendix for reference). It is expected to output `1029`, but we got `0` instead. Let's consider this program:
@@ -577,7 +578,92 @@ The typing and evaluation results are all correct. This feature is properly impl
 
 ### Polymorphic Type
 
-By implementing type inference, the interpreter already supports polymorphic type. The details are  discussed in previous sections.
+The type inference algorithm implemented in the interpreter can be extended to support a simple form of polymorphism called let-polymorphism. Consider program `pcf.twice.spl`:
+
+```ocaml
+let
+	twice = fn f => fn x => f (f x)
+in
+  	twice twice twice succ 0
+end
+```
+
+Using original type inference algorithm, this will not pass type checking. The principal type for `twice` is $(t\rightarrow t)\rightarrow t\rightarrow t$. When we apply `twice` to `twice`, $(t\rightarrow t)\rightarrow t\rightarrow t$ will be unifed with $t\rightarrow t$, which will cause circularity. But actually the context of two `twice` are different, so their types should take different forms instead of a single $(t\rightarrow t)\rightarrow t\rightarrow t$. That forms the basic idea for let-polymorphism. 
+
+In let-polymorphism, when a type $t$ is bount to a name $s$, all type variables, except those already mentioned in the typing environment, $x_1,x_2,\dots,x_n$, are generalized as $\forall x_i:t$. When that name is accessed during type checking, all generalized variables are instantiated with new ones $y_1,y_2,\dots,y_n$ and the type $[y_1/x_1,y_2/x_2,\dots,y_n/x_n]\ t$ is returned as result. By this algorithm can $s$ takes on different forms. The detailed algorithm is described in Section 22.7 of *Types and Programming Languages*.
+
+#### Implementation
+
+Several things have to be modified to support this feature. First, two additional methods should be implemented for `Type`:
+
+```java
+public abstract Set<TypeVar> collect();
+public abstract Type clone();
+```
+
+`collect` recursively collects all type variables and return them as a set. `clone` makes a copy of the original type so that the result and original `Type` object is not reference equal. 
+
+Second thing is to reimplement `TypeEnv` as explicit name-type pairs instead of the implicit function definition in the original implementation. This makes it possible to iterate through each entry in the typing environment. 
+
+```java
+public class TypeEnv {
+    public TypeEnv E;
+    public final Symbol x;
+    public final Type t;
+    
+    /* Other methods ... */
+}
+```
+
+The rest of reimplemented `TypeEnv` looks very likely to `Env`, so I will not show it here. 
+
+Then I implement let-polymorphism as a method `ofGeneralized` of `TypeEnv`. Its implementation follows the algorithm stated above. The generalized variables are stored in `generalized`. The instantiation step is implemented in overidden `get` method, which replaces all generalized variables.
+
+```java
+public static TypeEnv ofGeneralized(final TypeEnv E, final Symbol x, final Type t) {
+    // Collect all type variables from given type
+    var generalized = t.collect();
+
+    // Prune variables that are already mentioned in typing environment
+    // The rest are the ones to be generalized
+    generalized.removeIf((TypeVar tv) -> {
+        var curE = E;
+        while (!curE.isEmpty()) {
+            if (curE.t.contains(tv))
+                return true;
+            curE = curE.E;
+        }
+        return false;
+    });
+
+    // Override get method of this entry
+    return new TypeEnv(E, x, t) {
+        @Override public Type get(Symbol x) {
+            // Search inner entries if name does not match
+            if (this.x != x) {
+                if (E != null)
+                    return E.get(x);
+                else
+                    return null;
+            }
+
+            // Instantiate all generalized type variables
+            var ret = t.clone();
+            for (var tv : generalized){
+                var inst = new TypeVar(tv.isEqualityType());
+                ret = ret.replace(tv, inst);
+            }
+            return ret;
+        }
+    };
+}
+```
+
+The rest work is simple, just replace `TypeEnv.of` with `TypeEnv.ofGeneralized` when necessary. Of course, when checking $t_2$ in `let` expression, we need this to bind $t_1$ to a given name. Besides, for generic library functions, we also need this polymorphism, since their contexts are quite similar to $t_1$ in `let` expressions. This work is done in constructor of `DefaultTypeEnv`.
+
+#### Result
+
+Program `pcf.twice.spl` now passes type checking, as shown in Appendix.
 
 
 
@@ -587,7 +673,7 @@ By implementing type inference, the interpreter already supports polymorphic typ
 
 * If there are too many levels of recursion in input program, JVM could possibly throws `StackOverflow` exception. If you are sure that the program will not cause infinite recursion, try set stack size of JVM larger through `-Xss` argument, for example `-Xss8m` if a stack of 8MB is desired. 
 
-* Two bonus features: GC and lazy evaluation, can be enabled and disabled by setting constants in `Feature` class in package `simpl.interpreter`. Whether to enable these features should be decided before compilation. Mutually recursive combinator just works in eager evaluation.
+* Three bonus features: GC, lazy evaluation and Let-Polymorphism, can be enabled and disabled by setting constants in `Feature` class in package `simpl.interpreter`. Whether to enable these features should be decided before compilation. Mutually recursive combinator only works in eager evaluation.
 
     ```java
     public class Feature {
@@ -595,12 +681,14 @@ By implementing type inference, the interpreter already supports polymorphic typ
         public static final boolean GC = true;
         // Whether to enable lazy evaluation
         public static final boolean LAZY = false;
+        // Whether to enable let-polymorphism in type checking
+        public static final boolean LET_POLY = true;
     }
     ```
 
 ### Output
 
-Output of all provided test cases with eager (call-by-value) evaluation strategy and GC enabled. The exported `jar` also uses this configuration.
+The following is the output of all provided test cases (excluding those written by myself). The configuration of the interpreter is: (1) eager (call-by-value) evaluation strategy (2) GC enabled (3) Let-Polymorphism enabled. The exported `jar` also uses this configuration.
 
 ```
 doc/examples/plus.spl
@@ -622,7 +710,7 @@ doc/examples/sum.spl
 int
 6
 doc/examples/map.spl
-((tv59 -> tv66) -> (tv59 list -> tv66 list))
+((tv60 -> tv67) -> (tv60 list -> tv67 list))
 fun
 doc/examples/pcf.sum.spl
 (int -> (int -> int))
@@ -639,5 +727,10 @@ int
 doc/examples/pcf.fibonacci.spl
 int
 6765
+doc/examples/pcf.twice.spl
+int
+16
+doc/examples/pcf.lists.spl
+type error
 ```
 
