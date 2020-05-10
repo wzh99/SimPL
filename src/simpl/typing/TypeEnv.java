@@ -1,6 +1,5 @@
 package simpl.typing;
 
-import simpl.interpreter.Feature;
 import simpl.parser.Symbol;
 
 public class TypeEnv {
@@ -38,10 +37,6 @@ public class TypeEnv {
     }
 
     public static TypeEnv ofGeneralized(final TypeEnv E, final Symbol x, final Type t) {
-        // Fall back to normal mapping if Let-Polymorphism is disabled
-        if (!Feature.LET_POLY)
-            return of(E, x, t);
-
         // Collect all type variables from given type
         var generalized = t.collect();
 

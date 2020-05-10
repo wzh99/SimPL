@@ -1,8 +1,8 @@
 package simpl.interpreter;
 
-class UnitValue extends Value {
+public class UnitValue extends Value {
 
-    protected UnitValue() {
+    public UnitValue() {
     }
 
     public String toString() {

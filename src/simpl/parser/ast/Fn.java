@@ -25,17 +25,16 @@ public class Fn extends Expr {
         // Define parameter type as type variable
         var paramTv = new TypeVar(true);
 
-        // Infer body type in expression
+        // Infer result type in expression
         var resTr = e.typeCheck(TypeEnv.of(E, x, paramTv));
         var resTy = resTr.t;
         var subst = resTr.s;
 
-        // Substitute possibly concrete type for type variable
+        // Substitute type scheme for type variable
         var paramTy = subst.apply(paramTv);
-        resTy = subst.apply(resTy);
 
         // Return type result
-        return TypeResult.of(subst, subst.apply(new ArrowType(paramTy, resTy)));
+        return TypeResult.of(subst, new ArrowType(paramTy, resTy));
     }
 
     @Override public Value eval(State s) throws RuntimeError {

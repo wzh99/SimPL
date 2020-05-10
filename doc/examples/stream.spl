@@ -1,0 +1,5 @@
+let fib =
+    let gen = rec f => fn a => fn b =>
+        stream a (fn u => f b (a + b))
+    in gen 1 1 end
+in take 20 (drop 4 fib) end

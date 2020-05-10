@@ -1,8 +1,8 @@
 package simpl.interpreter;
 
-class NilValue extends Value {
+public class NilValue extends Value {
 
-    protected NilValue() {
+    public NilValue() {
     }
 
     public String toString() {

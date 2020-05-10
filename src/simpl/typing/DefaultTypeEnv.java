@@ -28,5 +28,13 @@ public class DefaultTypeEnv extends TypeEnv {
         E = of(E, Symbol.symbol("pred"), new ArrowType(new IntType(), new IntType()));
 
         E = of(E, Symbol.symbol("succ"), new ArrowType(new IntType(), new IntType()));
+
+        var streamElem = new TypeVar(true);
+        E = ofGeneralized(E, Symbol.symbol("stream"), new ArrowType(streamElem,
+            new ArrowType(new ArrowType(Type.UNIT, new StreamType(streamElem)), new StreamType(streamElem))));
+        E = ofGeneralized(E, Symbol.symbol("take"),
+            new ArrowType(Type.INT, new ArrowType(new StreamType(streamElem), new ListType(streamElem))));
+        E = ofGeneralized(E, Symbol.symbol("drop"),
+            new ArrowType(Type.INT, new ArrowType(new StreamType(streamElem), new StreamType(streamElem))));
     }
 }

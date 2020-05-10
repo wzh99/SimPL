@@ -10,6 +10,7 @@ public class ConsValue extends Value {
     }
 
     public String toString() {
+//        return v1 + "::" + v2;
         return "list@" + len();
     }
 
