@@ -3,7 +3,6 @@ package simpl.interpreter;
 import simpl.parser.Parser;
 import simpl.parser.SyntaxError;
 import simpl.parser.ast.Expr;
-import simpl.typing.DefaultTypeEnv;
 import simpl.typing.TypeError;
 
 import java.io.FileInputStream;
@@ -16,7 +15,7 @@ public class Interpreter {
             Parser parser = new Parser(inp);
             java_cup.runtime.Symbol parseTree = parser.parse();
             Expr program = (Expr) parseTree.value;
-            System.out.println(program.typeCheck(new DefaultTypeEnv()).t);
+//            System.out.println(program.typeCheck(new DefaultTypeEnv()).t);
             System.out.println(program.eval(new InitialState()));
         }
         catch (SyntaxError e) {
@@ -37,25 +36,26 @@ public class Interpreter {
 
     private static void interpret(String filename) {
         Interpreter i = new Interpreter();
-        System.out.println(filename);
+        //        System.out.println(filename);
         i.run(filename);
     }
 
     public static void main(String[] args) {
+        interpret(args[0]);
         // Provided programs
-        interpret("doc/examples/plus.spl");
-        interpret("doc/examples/factorial.spl");
-        interpret("doc/examples/gcd1.spl");
-        interpret("doc/examples/gcd2.spl");
-        interpret("doc/examples/max.spl");
-        interpret("doc/examples/sum.spl");
-        interpret("doc/examples/map.spl");
-        interpret("doc/examples/pcf.sum.spl");
-        interpret("doc/examples/pcf.even.spl");
-        interpret("doc/examples/pcf.minus.spl");
-        interpret("doc/examples/pcf.factorial.spl");
-        interpret("doc/examples/pcf.fibonacci.spl");
-        interpret("doc/examples/letpoly.spl");
+        //        interpret("doc/examples/plus.spl");
+        //        interpret("doc/examples/factorial.spl");
+        //        interpret("doc/examples/gcd1.spl");
+        //        interpret("doc/examples/gcd2.spl");
+        //        interpret("doc/examples/max.spl");
+        //        interpret("doc/examples/sum.spl");
+        //        interpret("doc/examples/map.spl");
+        //        interpret("doc/examples/pcf.sum.spl");
+        //        interpret("doc/examples/pcf.even.spl");
+        //        interpret("doc/examples/pcf.minus.spl");
+        //        interpret("doc/examples/pcf.factorial.spl");
+        //        interpret("doc/examples/pcf.fibonacci.spl");
+        //        interpret("doc/examples/letpoly.spl");
 
         // Programs written by myself
         //        interpret("doc/examples/gc.spl");

@@ -4,31 +4,31 @@
 
 [TOC]
 
-## Introduction
+## 1 Introduction
 
-### Objective
+### 1.1 Objective
 
 In this project I am asked to implement an interpreter for the programming language SimPL. SimPL is a simplified dialect of ML, which can be used for both functional and imperative programming. 
 
-### Project Structure
+### 1.2 Project Structure
 
-#### Parser
+#### 1.2.1 Parser
 
 In package `parser`, infrastructures for lexical and syntactical analysis are already provided. The parser parses the source program into AST representation. My task is to implement type checking and evaluation methods for all the AST nodes.
 
-#### Interpreter
+#### 1.2.2 Interpreter
 
 In package `interpreter`, class `Interpreter` serves as the program entry for the whole project. Besides, there are classes representing runtime environment and values in this packages. Library functions should also be defined in this package. 
 
-#### Typing
+#### 1.2.3 Typing
 
 In package `typing` resides classes representing types and typing environment. Substitution and unification methods should be implemented for all types, which form the basis of type inference. 
 
 
 
-## Typing
+## 2 Typing
 
-### Type Inference
+### 2.1 Type Inference
 
 Procedures required to perform type inference are listed in abstract class `Type`. These methods are shown in the listing:
 
@@ -46,13 +46,13 @@ Method `isEqualityType` is mainly used for type checking in equality expression,
 
 The discussion may be divided with respect to different categories of types: 'Primitive type' refers to unit, boolean and integer. 'Compound type` refers to arrow, pair, list, reference, etc. Type variable may also appear as a separate category.
 
-#### Substitution
+#### 2.1.2 Substitution
 
 `contains` and `replace` are related to type substitution. `contains` tests whether a certian type variable ever appears in this type, and `replace` replaces a type variable with another type if that type variable appears in this type. 
 
-Primitive types cannot contain any type variable, and they cannot be replaced. Compound types may contain type variables, depending on whether its components contains that. And it can call `replace` on its components, and then combine the resulting substitutions. Type variable contains another type variable if it shares the same name with that, and replacement result is that type.
+Primitive types cannot contain any type variable, and they cannot be replaced. Compound types may contain type variables, depending on whether its components contain that. And it can call `replace` on its components, and then combine the resulting substitutions. Type variable contains another type variable if it shares the same name with that, and replacement result is that type.
 
-#### Unification
+#### 2.1.3 Unification
 
 Type unification finds a substitution that can make a certain type uniform with another type. This algorithm is implemented in method `unify`. 
 
@@ -60,7 +60,7 @@ For any type, if one but not both of the types is a type variable, and that type
 
 For type variables, if another type is also a type variable, do nothing if they share the same name, or substitute that for this type if they don't. If that type still contains this type variable, there is a type circularity. 
 
-### Type Checking
+### 2.2 Type Checking
 
 Type checking algorithm is implemeted in `typeCheck` methods of AST nodes. The procedure is supported by type environment `TypeEnv`, which records mapping from names to types. When a `Name` node is visited, the algorithm look the name up in `TypeEnv`.
 
@@ -82,13 +82,13 @@ In the interpreter, unification is performed *along with* derivation of constrai
 }
 ```
 
-### Let-polymorphism
+### 2.3 Let-polymorphism
 
-#### Algorithm
+#### 2.3.1 Algorithm
 
-Here I adopt the algorithm introduced in Section 22.7 of *Types and Programming Languages*, instead of strictly following the rule in the specification. When a type $t$ is bound to a name $s$, all type variables, except those already mentioned in the typing environment, $x_1,x_2,\dots,x_n$, are generalized as $\forall x_i:t$. When that name is accessed during type checking, all generalized variables are instantiated with new ones $y_1,y_2,\dots,y_n$ and type scheme $[y_1/x_1,y_2/x_2,\dots,y_n/x_n]\ t$ is returned as result. By this algorithm can $s$ takes on different forms. 
+Here I adopt the algorithm introduced in Section 22.7 of *Types and Programming Languages*, instead of strictly following the rule in the specification. When a type $t$ is bound to a name $s$, all type variables, except those already mentioned in the typing environment, $x_1,x_2,\dots,x_n$, are generalized as $\forall x_i:t$. When that name is accessed during type checking, all generalized variables are instantiated with new ones $y_1,y_2,\dots,y_n$ and type scheme $[y_1/x_1,y_2/x_2,\dots,y_n/x_n]\ t$ is returned as result. By this algorithm can $s$ takes on different forms in different contexts. 
 
-#### Implementation
+#### 2.3.2 Implementation
 
 Several things have to be modified to support this feature. First, two additional methods should be implemented for `Type`:
 
@@ -159,21 +159,21 @@ The rest work is simple, just replace `TypeEnv.of` with `TypeEnv.ofGeneralized` 
 
 
 
-## Semantics
+## 3 Semantics
 
-### State
+### 3.1 State
 
 From the specification, it can be known that the machine state is composed of environment $E$, memory $M$, and memory pointer $p$. 
 
-#### Environment
+#### 3.1.1 Environment
 
 Environment $E$ stores mapping from names to values. It can be composed with another mapping, if we want to create a new binding. We can also query the environment to find value bound to a certian name.
 
-#### Memory
+#### 3.1.2 Memory
 
 Memory $M$ stores mappings from integer addresses to values. Memory pointer $p$ stores the address for next reference cell. It can also be understood as the number of total reference cells at that time. This pointer helps allocation of new reference cells. 
 
-### Values
+### 3.2 Values
 
 Package `interpreter` contains several classes representing values. Since the language specification adopts big-step semantics, the evaluation result of any expression must be a value. For `Value` subclasses, only the following method need to be implemented:
 
@@ -183,7 +183,7 @@ Package `interpreter` contains several classes representing values. Since the la
 
  This is actually the method inherited from `Object`. Only values that are of equality type can be compared. Otherwise, it always returns `false`. Implementation of this method for values is trivial, so I skip it here.
 
-### Evaluation
+### 3.3 Evaluation
 
 `eval` method of AST nodes need to be implemented to support evaluation. Like in type checking, I just discuss the common pattern and list cases that need special care. 
 
@@ -203,11 +203,11 @@ The pattern is quite simple. Just call `eval` on sub-expressions according to th
 }
 ```
 
-#### Name-Value Binding
+#### 3.3.1 Name-Value Bindings
 
 Environment $E$ stores all name-value bindings at runtime. It is queried when evaluating `Name` expressions. A new environment can be created by composing a new binding with a previous environment. There are three places where new bindings are created: `App`, `Let` and `Rec`. Name bindings created in `eval` method of `App` and `Let` are straightforward. `eval` method of `Rec` also create new binding, but the binding is stored in environment of the closure, instead of altering machine state.  
 
-#### Reference Cells 
+#### 3.3.2 Reference Cells 
 
 `Ref`, `Deref` and `Assign` nodes have something to do with reference cells in memory. `Ref` creates new reference cell and assign value to it. `Deref` reads value from a reference cell. `Assign` assigns another value to an exisiting reference cell, overwriting previous value. In my implementation, I abstract basic operations of memory as methods in `Mem` for better readability and extendability: 
 
@@ -228,11 +228,11 @@ public class Mem extends HashMap<Integer, Value> {
 
 
 
-## Predefined Functions
+## 4 Predefined Functions
 
 There are seven predefined functions that I have to implement: four library functions `fst`, `snd`, `hd` and `tl`; three PCF functions `iszero`, `pred` and `succ`. They follow similar implementation patterns. Here I choose `fst` as the example and go through all the work that have to be done.
 
-### Semantics
+### 4.1 Semantics
 
 Semantics for predefined functions are defined by calling the constructor of its super class `FunValue`. Top level functions are in empty environment. Its parameter name can be arbitrary, as long as it is consistent with the one in function body. The body expresson is an anonymous subclass of `Expr`. There is nothing to do with `typeCheck` method because it will never be called. `eval` method is our concern. The implementation is quite straightforward. Finally, the implementation looks like this: 
 
@@ -254,7 +254,7 @@ super(Env.empty, Symbol.symbol("x"), new Expr() {
 });
 ```
 
-### Environment Definition
+### 4.2 Environment Definition
 
 Predefined functions should be added to environment to make it detectable in later evaluation. This work should be done in `initialEnv`, which is a static method of `InitialState`. 
 
@@ -262,7 +262,7 @@ Predefined functions should be added to environment to make it detectable in lat
 E = Env.of(E, Symbol.symbol("fst"), new Fst());
 ```
 
-### Type Definition
+### 4.3 Type Definition
 
 Type definition of predefined functions should be added to type environment to ensure the type checking for its call will not fail. This work is done in constructor of `DefaultTypeEnv`. We start by an empty type environment, and successively add type definitions of functions to it. Types of the four library functions are all parameterized types. One thing to be notice is that, if two type parameters are definitely the same, they should be assigned the same type variable. 
 
@@ -282,17 +282,17 @@ public DefaultTypeEnv() {
 
 
 
-## Bonus Features
+## 5 Bonus Features
 
-### Garbage Collection
+### 5.1 Garbage Collection
 
-#### Implementation
+#### 5.1.1 Implementation
 
 In SimPL interpreter, garbage collection means freeing reference cells that can no longer be used, allowing these locations to be allocated again in later evaluation. The key problem is how to know a reference cell is used. In SimPL, a reference is in use means it is bound to one or more names. The most  convenient way to know this is to check the environment. If the environment contains mapping to this reference cell, it is used. Otherwise, it is not, and we can free this cell for a later allocation. 
 
 Thanks to encapsulation work done before, only `alloc` method in `Mem` needs to be modified. Mark-sweep algorithm is implemented here. The method iterates through all the name-value bindings in the environment, and marks all the cells in use. If all cells are in use, it increments the address counter and return address for the new cell. Otherwise, it returns the first cell not in use.
 
-#### Result
+#### 5.1.2 Result
 
 Consider program `gc.spl`:
 
@@ -338,9 +338,9 @@ ref@2
 
 It can be seen that only three different cells are allocated. GC works properly. 
 
-### Lazy Evaluation
+### 5.2 Lazy Evaluation
 
-#### Implementation
+#### 5.2.1 Implementation
 
 In eager (call-by-value) evaluation strategy, $E$ stores mappings from name to value. However, in lazy evaluation, $E$ could also store mappings from name to expression *and* environment. For any expression whose value should be bound to a name in eager evaluation, we directly create a mapping from that name to the expression, plus the environment required to evaluate this expression. When a name is being evaluated, the interpreter should first evaluate that expression with corresponding environment. To avoid reevaluating that expression later, the interpreter caches the value in the environment.
 
@@ -389,7 +389,7 @@ Only two places should create this kind of mapping: `App` and `Let`. `Rec` also 
  }
 ```
 
-#### Result
+#### 5.2.2 Result
 
 Run all the provided test cases with lazy evaluation and GC enabled. 
 
@@ -469,9 +469,9 @@ int
 1029
 ```
 
-### Mutually Recursive Combinator
+### 5.3 Mutually Recursive Combinator
 
-#### Design
+#### 5.3.1 Design
 
 I have to extend the original SimPL definition to support this feature. When designing this syntax feature, I refer to OCaml language. In OCaml, the syntax for MRC looks like this:
 
@@ -503,7 +503,7 @@ $$
 \tag{T-LetAnd}
 $$
 
-#### Implementation
+#### 5.3.2 Implementation
 
 Since the syntax is defined by myself, I have to modify the grammar file and regenerate lexer and parser classes for the new grammar. In file `simpl.lex`, I add `and` keyword in `<YYINITIAL>` block. This enables lexer to recognize this keyword as a token.
 
@@ -550,7 +550,7 @@ public class LetAnd extends Expr {
 
 Then run the `Makefile` script in `parser` directory, `Lexer` and `Parser` are automatically generated in this directory. The rest work is to implement `typeCheck` and `eval` methods. The implementation just follows the rules stated before.
 
-#### Result
+#### 5.3.3 Result
 
 Consider program `mrc.even.spl` which decides whether a number is even or odd:
 
@@ -573,11 +573,11 @@ false
 
 The typing and evaluation results are all correct. This feature is properly implemented.
 
-### Infinite Stream
+### 5.4 Infinite Stream
 
 A stream is an infinite list. Like a list, a stream value contains two members, and the first is current element. The main difference is that its second field is a function $\lambda x.e$ of type $unit\rightarrow {'a}\ stream$ which specifies how the following elements could be produced by the stream. The expression $e$ will only be evaluated when the next element is actually needed, producing a new stream starting at the next position. 
 
-#### Implementation
+#### 5.4.1 Implementation
 
 As preparation, I create class `StreamType` for typing and class `StreamValue` for runtime value representation. Their definitions are quite similar to their list counterparts so I omit them here. Then comes the critical part: implementation of basic operations on streams. I decide to implement them as library functions, so no new syntax is introduced. In this project, three operations are supported: `stream` for stream creation, `take` for building finite list from stream, `drop` for dropping elements from stream. 
 
@@ -648,7 +648,7 @@ public class Stream extends FunValue {
 
 `drop` takes an integer `n` and a stream `s` and returns another stream with first `n` elements dropped from `s`. Its type is $int\rightarrow{'a}\ stream\rightarrow{'a}\ stream$. The implementation is similar to `take` except that no elements should be collected, and the final stream should be returned. The code is omitted here.
 
-#### Result
+#### 5.4.2 Result
 
 Consider program `stream.spl`.
 
@@ -680,7 +680,7 @@ The output is correct. Actually we can take far more elements from the stream. W
 
 ## Appendix
 
-### Notice
+### A.1 Notice
 
 * If there are too many levels of recursion in input program, JVM could possibly throws `StackOverflow` exception. If you are sure that the program will not cause infinite recursion, try set stack size of JVM larger through `-Xss` argument, for example `-Xss8m` if a stack of 8MB is desired. 
 
@@ -695,7 +695,7 @@ The output is correct. Actually we can take far more elements from the stream. W
     }
     ```
 
-### Output
+### A.2 Output
 
 The following is the output of all provided test cases, excluding those written by myself. The configuration of the interpreter is: (1) eager (call-by-value) evaluation strategy (2) GC enabled. The exported `jar` also uses this configuration.
 

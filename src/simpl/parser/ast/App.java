@@ -25,7 +25,7 @@ public class App extends BinaryExpr {
         if (fnTy instanceof ArrowType) { // lhs known to be a function
             // Check conformance of parameter and argument
             var paramTy = ((ArrowType) fnTy).t1;
-            subst = subst.compose(argTy.unify(paramTy));
+            subst = subst.compose(paramTy.unify(argTy));
             var resTy = subst.apply(((ArrowType) fnTy).t2);
             return TypeResult.of(subst, resTy);
         }
