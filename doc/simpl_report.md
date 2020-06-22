@@ -303,8 +303,8 @@ let a = ref 0 in
     end;
     let d =
         let c = ref 3 in
-            ref 4;
-            ref 5;
+            let e = ref 4 in () end;
+            let f = ref 5 in () end;
             c
         end in
         !d

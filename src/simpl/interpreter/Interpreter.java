@@ -1,8 +1,8 @@
 package simpl.interpreter;
 
 import simpl.parser.Parser;
-import simpl.parser.SyntaxError;
 import simpl.parser.ast.Expr;
+import simpl.typing.DefaultTypeEnv;
 import simpl.typing.TypeError;
 
 import java.io.FileInputStream;
@@ -15,22 +15,20 @@ public class Interpreter {
             Parser parser = new Parser(inp);
             java_cup.runtime.Symbol parseTree = parser.parse();
             Expr program = (Expr) parseTree.value;
-//            System.out.println(program.typeCheck(new DefaultTypeEnv()).t);
+            var type = program.typeCheck(new DefaultTypeEnv()).t;
+            System.out.println(type);
             System.out.println(program.eval(new InitialState()));
         }
-        catch (SyntaxError e) {
-            System.out.println("syntax error");
-        }
         catch (TypeError e) {
-            e.printStackTrace();
+            //            e.printStackTrace();
             System.out.println("type error");
         }
         catch (RuntimeError e) {
-            e.printStackTrace();
+            //            e.printStackTrace();
             System.out.println("runtime error");
         }
         catch (Exception e) {
-            e.printStackTrace(System.err);
+            System.out.println("syntax error");
         }
     }
 
@@ -41,8 +39,9 @@ public class Interpreter {
     }
 
     public static void main(String[] args) {
-        interpret(args[0]);
+        //        interpret(args[0]);
         // Provided programs
+
         //        interpret("doc/examples/plus.spl");
         //        interpret("doc/examples/factorial.spl");
         //        interpret("doc/examples/gcd1.spl");
@@ -56,10 +55,14 @@ public class Interpreter {
         //        interpret("doc/examples/pcf.factorial.spl");
         //        interpret("doc/examples/pcf.fibonacci.spl");
         //        interpret("doc/examples/letpoly.spl");
-
-        // Programs written by myself
+        //
+        //        // Programs written by myself
         //        interpret("doc/examples/gc.spl");
         //        interpret("doc/examples/mrc.even.spl");
         //        interpret("doc/examples/stream.spl");
+        //        interpret("doc/examples/circ.spl");
+        //        interpret("doc/examples/foreach.spl");
+        //        interpret("doc/examples/reduce.spl");
+        interpret("doc/examples/filter.spl");
     }
 }

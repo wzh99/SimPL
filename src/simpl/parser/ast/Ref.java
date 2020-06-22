@@ -25,13 +25,14 @@ public class Ref extends UnaryExpr {
     }
 
     @Override public Value eval(State s) throws RuntimeError {
-        // Evaluate the expression to be stored
-        var cellVal = e.eval(s);
         // Get pointer for this cell
         var ptr = s.M.alloc(s);
+        // Evaluate the expression to be stored
+        var cellVal = e.eval(s);
+        // Write to cell
         s.M.write(ptr, cellVal);
         // Print address of allocated cell to test GC
-        // System.out.println("ref@" + ptr);
+        //        System.out.println("ref@" + ptr);
         // Return reference
         return new RefValue(ptr);
     }

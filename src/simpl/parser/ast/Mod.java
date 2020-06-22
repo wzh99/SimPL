@@ -24,6 +24,9 @@ public class Mod extends ArithExpr {
         if (!(v2 instanceof IntValue)) {
             throw new RuntimeError("rhs is not an integer");
         }
+        if (((IntValue) v2).n == 0) {
+            throw new RuntimeError("division by zero");
+        }
         return new IntValue(((IntValue) v1).n % ((IntValue) v2).n);
     }
 }

@@ -28,7 +28,7 @@ public class Cons extends BinaryExpr {
         var subst = listTr.s.compose(elemTr.s);
         var listTy = subst.apply(listTr.t);
         elemTy = subst.apply(elemTy);
-        subst = listTy.unify(new ListType(elemTy)).compose(subst);
+        subst = subst.compose(listTy.unify(new ListType(elemTy)));
         // Return list type
         listTy = subst.apply(listTy);
         return TypeResult.of(subst, listTy);

@@ -3,6 +3,7 @@ package simpl.parser.ast;
 import simpl.interpreter.RuntimeError;
 import simpl.interpreter.State;
 import simpl.interpreter.Value;
+import simpl.typing.Type;
 import simpl.typing.TypeEnv;
 import simpl.typing.TypeError;
 import simpl.typing.TypeResult;
@@ -20,10 +21,11 @@ public class Seq extends BinaryExpr {
     @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
         // Check lhs statement
         var lhsTy = l.typeCheck(E);
+        var subst = lhsTy.s.compose(lhsTy.t.unify(Type.UNIT));
         // Check rhs statement
         var rhsTy = r.typeCheck(E);
         // Return type of rhs
-        var subst = lhsTy.s.compose(rhsTy.s);
+        subst = subst.compose(rhsTy.s);
         return TypeResult.of(subst, subst.apply(rhsTy.t));
     }
 
