@@ -40,6 +40,20 @@ public class StreamType extends Type {
         return new StreamType(t.clone());
     }
 
+    @Override public boolean equals(Object other) {
+        if (!(other instanceof StreamType))
+            return false;
+        return t.equals(((StreamType) other).t);
+    }
+
+    @Override public int hashCode() {
+        return getClass().hashCode() ^ t.hashCode();
+    }
+
+    @Override public int height() {
+        return 1 + t.height();
+    }
+
     public String toString() {
         return t + " stream";
     }

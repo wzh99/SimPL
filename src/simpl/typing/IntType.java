@@ -30,6 +30,18 @@ final class IntType extends Type {
         return new IntType();
     }
 
+    @Override public boolean equals(Object other) {
+        return other instanceof IntType;
+    }
+
+    @Override public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override public int height() {
+        return 0;
+    }
+
     @Override public boolean contains(TypeVar tv) {
         return false;
     }

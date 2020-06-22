@@ -32,6 +32,20 @@ public final class ListType extends Type {
         return new ListType(t.clone());
     }
 
+    @Override public boolean equals(Object other) {
+        if (!(other instanceof ListType))
+            return false;
+        return t.equals(((ListType) other).t);
+    }
+
+    @Override public int hashCode() {
+        return getClass().hashCode() ^ t.hashCode();
+    }
+
+    @Override public int height() {
+        return 1 + t.height();
+    }
+
     @Override public boolean contains(TypeVar tv) {
         return t.contains(tv);
     }

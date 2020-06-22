@@ -1,11 +1,10 @@
 package simpl.parser;
 
 import java.util.HashMap;
-import java.util.Objects;
 
 public class Symbol {
 
-    private String name;
+    public String name;
 
     private Symbol(String n) {
         name = n;
@@ -41,6 +40,6 @@ public class Symbol {
     }
 
     @Override public int hashCode() {
-        return Objects.hash(name);
+        return name.hashCode();
     }
 }

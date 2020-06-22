@@ -32,6 +32,20 @@ public final class RefType extends Type {
         return new RefType(t.clone());
     }
 
+    @Override public boolean equals(Object other) {
+        if (!(other instanceof RefType))
+            return false;
+        return t.equals(((RefType) other).t);
+    }
+
+    @Override public int hashCode() {
+        return getClass().hashCode() ^ t.hashCode();
+    }
+
+    @Override public int height() {
+        return 1 + t.height();
+    }
+
     @Override public boolean contains(TypeVar tv) {
         return false;
     }

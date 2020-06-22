@@ -37,6 +37,20 @@ public final class ArrowType extends Type {
         return new ArrowType(t1.clone(), t2.clone());
     }
 
+    @Override public boolean equals(Object other) {
+        if (!(other instanceof ArrowType))
+            return false;
+        return t1.equals(((ArrowType) other).t1) && t2.equals(((ArrowType) other).t2);
+    }
+
+    @Override public int hashCode() {
+        return getClass().hashCode() ^ t1.hashCode() ^ t2.hashCode();
+    }
+
+    @Override public int height() {
+        return 1 + Math.max(t1.height(), +t2.height());
+    }
+
     @Override public boolean contains(TypeVar tv) {
         return t1.contains(tv) || t2.contains(tv);
     }

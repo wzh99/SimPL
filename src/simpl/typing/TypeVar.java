@@ -3,7 +3,6 @@ package simpl.typing;
 import simpl.parser.Symbol;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 public class TypeVar extends Type {
@@ -11,7 +10,7 @@ public class TypeVar extends Type {
     private static int typeVarCount = 0;
 
     private boolean equalityType;
-    private Symbol name;
+    public Symbol name;
 
     public TypeVar(boolean equalityType) {
         this.equalityType = equalityType;
@@ -64,8 +63,16 @@ public class TypeVar extends Type {
         return name.equals(typeVar.name);
     }
 
+    public int compareTo(TypeVar other) {
+        return name.name.compareTo(other.name.name);
+    }
+
     @Override public int hashCode() {
-        return Objects.hash(name);
+        return name.hashCode();
+    }
+
+    @Override public int height() {
+        return 1;
     }
 
     @Override public boolean contains(TypeVar tv) {

@@ -3,4 +3,4 @@
         if l = nil
         then v
         else reduce f (tl l) (f v (hd l)))
-(fn a => fn b => a + b) (1::2::3::nil) 1
+(* (fn a => fn b => a + b) (1::2::3::nil) 0 *)

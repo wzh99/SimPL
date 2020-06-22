@@ -37,6 +37,20 @@ public final class PairType extends Type {
         return new PairType(t1.clone(), t2.clone());
     }
 
+    @Override public boolean equals(Object other) {
+        if (!(other instanceof PairType))
+            return false;
+        return t1.equals(((PairType) other).t1) && t2.equals(((PairType) other).t2);
+    }
+
+    @Override public int hashCode() {
+        return getClass().hashCode() ^ t1.hashCode() ^ t2.hashCode();
+    }
+
+    @Override public int height() {
+        return 1 + Math.max(t1.height(), t2.height());
+    }
+
     @Override public boolean contains(TypeVar tv) {
         return t1.contains(tv) || t2.contains(tv);
     }
