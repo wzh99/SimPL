@@ -2,4 +2,4 @@ rec foreach =>
     fn f => fn l =>
         if l = nil
         then ()
-        else f (hd l); foreach f (tl l)
+        else (f (hd l); foreach f (tl l))

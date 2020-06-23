@@ -44,27 +44,19 @@ public abstract class Type {
 
 Method `isEqualityType` is mainly used for type checking in equality expression, so I will skip it here. In the following, implementation of the rest three methods will be discussed. 
 
-The discussion may be divided with respect to different categories of types: 'Primitive type' refers to unit, boolean and integer. 'Compound type` refers to arrow, pair, list, reference, etc. Type variable may also appear as a separate category.
-
 #### 2.1.2 Substitution
 
-`contains` and `replace` are related to type substitution. `contains` tests whether a certian type variable ever appears in this type, and `replace` replaces a type variable with another type if that type variable appears in this type. 
-
-Primitive types cannot contain any type variable, and they cannot be replaced. Compound types may contain type variables, depending on whether its components contain that. And it can call `replace` on its components, and then combine the resulting substitutions. Type variable contains another type variable if it shares the same name with that, and replacement result is that type.
+`contains` and `replace` are related to type substitution. `contains` tests whether a certian type variable ever appears in this type, and `replace` replaces a type variable with another type if that type variable appears in this type. The substitution rules just follow the ones introduced in the lecture.
 
 #### 2.1.3 Unification
 
-Type unification finds a substitution that can make a certain type uniform with another type. This algorithm is implemented in method `unify`. 
-
-For any type, if one but not both of the types is a type variable, and that type variable appears on the RHS, the two variables are swapped. Primitive type can only be unified with the same type, yielding an identity substitution. Compound type can only be unified with another compound type of the same kind, and then unifies its component pairwise. For other cases, report a type mismatch error. The substitution returns by the components should be composed. 
-
-For type variables, if another type is also a type variable, do nothing if they share the same name, or substitute that for this type if they don't. If that type still contains this type variable, there is a type circularity. 
+Type unification finds a substitution that can make a certain type equivalent with another type. This algorithm is implemented in method `unify`. The unification rules are listed in the specification.
 
 ### 2.2 Type Checking
 
 Type checking algorithm is implemeted in `typeCheck` methods of AST nodes. The procedure is supported by type environment `TypeEnv`, which records mapping from names to types. When a `Name` node is visited, the algorithm look the name up in `TypeEnv`.
 
-In the interpreter, unification is performed *along with* derivation of constraints, insteading of *after* that. Generally, the implementation can follow a certain pattern. First, call `typeCheck` on sub-expressions and get their respective `TypeResult`s. Then, perform unification on the types of sub-expressions. Finally, return type of this expression. Once a new substitution is derived, it is immediately composed with previous one. The implementation of `typeCheck` in `ArithExpr` class can serve as a good example for this pattern.
+In the interpreter, solution of constraints (unification) is performed *along with* derivation of those, insteading of *after* that. Generally, the implementation can follow a certain pattern. First, call `typeCheck` on sub-expressions and get their respective `TypeResult`s. Then, perform unification on the types of sub-expressions. Finally, return type of this expression. Once a new substitution is derived, it is immediately composed with previous one. The implementation of `typeCheck` in `ArithExpr` class can serve as a good example for this pattern.
 
 ```java
 @Override public TypeResult typeCheck(TypeEnv E) throws TypeError {
@@ -684,7 +676,7 @@ The output is correct. Actually we can take far more elements from the stream. W
 
 * If there are too many levels of recursion in input program, JVM could possibly throws `StackOverflow` exception. If you are sure that the program will not cause infinite recursion, try set stack size of JVM larger through `-Xss` argument, for example `-Xss8m` if a stack of 8MB is desired. 
 
-* Two bonus features: GC, lazy evaluation, can be enabled and disabled by setting constants in `Feature` class in package `simpl.interpreter`. Whether to enable these features should be decided before compilation. Mutually recursive combinator only works in eager evaluation. 
+* Two bonus features: GC, lazy evaluation, can be switched on and off by setting constants in `Feature` class in package `simpl.interpreter`. Whether to enable these features should be decided before compilation. Mutually recursive combinator only works in eager evaluation. 
 
     ```java
     public class Feature {

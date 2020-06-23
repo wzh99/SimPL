@@ -15,10 +15,9 @@ public class Interpreter {
             Parser parser = new Parser(inp);
             java_cup.runtime.Symbol parseTree = parser.parse();
             Expr program = (Expr) parseTree.value;
-            //            program.typeCheck(new DefaultTypeEnv());
-            var tr = program.typeCheck(new DefaultTypeEnv());
-            System.out.println(tr.t);
-            //            System.out.println(tr.s.toList());
+            program.typeCheck(new DefaultTypeEnv());
+            //            var tr = program.typeCheck(new DefaultTypeEnv());
+            //            System.out.println(tr.t);
             System.out.println(program.eval(new InitialState()));
         }
         catch (TypeError e) {
@@ -41,29 +40,29 @@ public class Interpreter {
     }
 
     public static void main(String[] args) {
-        //        interpret(args[0]);
-        // Provided programs
-        interpret("doc/examples/plus.spl");
-        interpret("doc/examples/factorial.spl");
-        interpret("doc/examples/gcd1.spl");
-        interpret("doc/examples/gcd2.spl");
-        interpret("doc/examples/max.spl");
-        interpret("doc/examples/sum.spl");
-        interpret("doc/examples/map.spl");
-        interpret("doc/examples/pcf.sum.spl");
-        interpret("doc/examples/pcf.even.spl");
-        interpret("doc/examples/pcf.minus.spl");
-        interpret("doc/examples/pcf.factorial.spl");
+        interpret(args[0]);
+        //        // Provided programs
+        //        interpret("doc/examples/plus.spl");
+        //        interpret("doc/examples/factorial.spl");
+        //        interpret("doc/examples/gcd1.spl");
+        //        interpret("doc/examples/gcd2.spl");
+        //        interpret("doc/examples/max.spl");
+        //        interpret("doc/examples/sum.spl");
+        //        interpret("doc/examples/map.spl");
+        //        interpret("doc/examples/pcf.sum.spl");
+        //        interpret("doc/examples/pcf.even.spl");
+        //        interpret("doc/examples/pcf.minus.spl");
+        //        interpret("doc/examples/pcf.factorial.spl");
         //        interpret("doc/examples/pcf.fibonacci.spl");
-        interpret("doc/examples/letpoly.spl");
-
-        // Programs written by myself
-        interpret("doc/examples/gc.spl");
-        interpret("doc/examples/mrc.even.spl");
-        interpret("doc/examples/stream.spl");
-        interpret("doc/examples/circ.spl");
-        interpret("doc/examples/foreach.spl");
-        interpret("doc/examples/reduce.spl");
-        interpret("doc/examples/filter.spl");
+        //        interpret("doc/examples/letpoly.spl");
+        //
+        //        // Programs written by myself
+        //        interpret("doc/examples/gc.spl");
+        //        interpret("doc/examples/mrc.even.spl");
+        //        interpret("doc/examples/stream.spl");
+        //        interpret("doc/examples/circ.spl");
+        //        interpret("doc/examples/foreach.spl");
+        //        interpret("doc/examples/reduce.spl");
+        //        interpret("doc/examples/filter.spl");
     }
 }

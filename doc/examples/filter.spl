@@ -1,8 +1,8 @@
-(rec filter =>
+let filter = rec filter =>
     fn p => fn l =>
         if l = nil
         then nil
         else if p (hd l)
         then (hd l)::(filter p (tl l))
-        else filter p (tl l))
-(* (fn x => x % 2 = 0) (1::2::3::nil) *)
+        else filter p (tl l) in
+filter (fn x => x % 2 <> 0) (1::2::3::nil) end
